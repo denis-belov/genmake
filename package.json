@@ -1,0 +1,6 @@
+{
+  "name": "genmake",
+  "version": "0.0.1",
+  "description": "Makefile generator",
+  "bin": "index.js"
+}

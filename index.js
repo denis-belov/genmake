@@ -145,31 +145,20 @@ const C_EXT = [ '.c' ];
 
 
 
+// compile constants
+const GCC_X64 = 'gcc-x64';
+const MSVS_X64 = 'msvs-x64';
+const EMCC_X64 = 'emcc-x64';
+const LLVM_WASM_X64 = 'llvm-wasm-x64';
+
+
+
 class Make
 {
-	// compile constants
-
-	static GCC_X64 = 'gcc-x64';
-	static MSVS_X64 = 'msvs-x64';
-	static EMCC_X64 = 'emcc-x64';
-	static LLVM_WASM_X64 = 'llvm-wasm-x64';
-
-
-
 	constructor (options)
 	{
-		const
-			{
-				GCC_X64,
-				MSVS_X64,
-				EMCC_X64,
-				LLVM_WASM_X64,
-			} = Make;
-
 		this.env = options?.env || GCC_X64;
 		this.dirname = options?.dirname || '';
-
-		this.output = '';
 
 
 
@@ -198,6 +187,8 @@ class Make
 		default:
 		}
 
+		this.INC = INC;
+
 
 
 		// output object
@@ -223,6 +214,8 @@ class Make
 		default:
 		}
 
+		this.OUT_OBJ = OUT_OBJ;
+
 
 
 		// output binary
@@ -247,6 +240,8 @@ class Make
 
 		default:
 		}
+
+		this.OUT_BIN = OUT_BIN;
 
 
 
@@ -306,6 +301,8 @@ class Make
 
 		default:
 		}
+
+		this.o = o;
 
 
 
@@ -381,6 +378,8 @@ class Make
 		default:
 		}
 
+		this.bin = bin;
+
 
 
 		// tools
@@ -425,6 +424,8 @@ class Make
 		default:
 		}
 
+		this.ASSEMBLER = ASSEMBLER;
+
 
 
 		let C_COMPILER = null;
@@ -458,6 +459,8 @@ class Make
 		default:
 		}
 
+		this.C_COMPILER = C_COMPILER;
+
 		let C_COMPILER_ARG = null;
 
 		switch (this.env)
@@ -488,6 +491,8 @@ class Make
 
 		default:
 		}
+
+		this.C_COMPILER_ARG = C_COMPILER_ARG;
 
 
 
@@ -522,6 +527,8 @@ class Make
 		default:
 		}
 
+		this.CPP_COMPILER = CPP_COMPILER;
+
 		let CPP_COMPILER_ARG = null;
 
 		switch (this.env)
@@ -552,6 +559,8 @@ class Make
 
 		default:
 		}
+
+		this.CPP_COMPILER_ARG = CPP_COMPILER_ARG;
 
 
 
@@ -586,6 +595,8 @@ class Make
 		default:
 		}
 
+		this.BUILDER = BUILDER;
+
 		let BUILDER_ARG = null;
 
 		switch (this.env)
@@ -616,6 +627,8 @@ class Make
 
 		default:
 		}
+
+		this.BUILDER_ARG = BUILDER_ARG;
 
 
 
@@ -649,6 +662,8 @@ class Make
 
 		default:
 		}
+
+		this.LINKER = LINKER;
 
 		let LINKER_ARG = null;
 
@@ -696,6 +711,8 @@ class Make
 
 		default:
 		}
+
+		this.LINKER_ARG = LINKER_ARG;
 
 
 
@@ -898,717 +915,191 @@ class Make
 		default:
 		}
 
-
-
-		// make includes overriding possibility
-		// make specific compiler arguments and arguments overriding possibility
-		this.cpp = (file, headers, includes_global, includes_local, location, flags_additional_global, flags_additional_local) =>
-		{
-			const { dir, base, ext, name } = path.parse(file);
-
-			let out = '';
-
-			out += `$(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o } : ${ dir }/${ base } ${ headers.join(' ') }\n`;
-
-			out += `\t${ mkdir(`$(BUILD)/${ location }/${ o }/${ dir }`) } && ${ mkdir(`$(BUILD)/${ location }/${ s }/${ dir }`) } && `;
-
-			out += `${ C_EXT.includes(ext) ? C_COMPILER : CPP_COMPILER } ${ dir }/${ base } ${ C_EXT.includes(ext) ? C_COMPILER_ARG : `${ CPP_COMPILER_ARG }` } ${ flags_additional_global || '' } ${ flags_additional_local || '' } ${ includes_global.map((include) => `${ INC }${ include }`).join(' ') } ${ includes_local.map((include) => `${ INC }${ include }`).join(' ') } ${ OUT_OBJ }$(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o }`;
-
-			switch (this.env)
-			{
-			case GCC_X64:
-			{
-				out += ` && objdump -d -M intel -S $(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o } > $(BUILD)/${ location }/${ s }/${ dir }/${ name }.${ s }`;
-
-				break;
-			}
-
-			case MSVS_X64:
-			{
-				out += ` /FA /Fa$(BUILD)/${ location }/${ s }/${ dir }/${ name }.${ s }`;
-
-				break;
-			}
-
-			case EMCC_X64:
-			{
-				// emcc object file to (?) assembly
-
-				break;
-			}
-
-			case LLVM_WASM_X64:
-			{
-				// clang object file to llvm assembly
-
-				break;
-			}
-
-			default:
-			}
-
-			this.output += `${ out }\n\n`;
-		};
-
-		// switch (this.env)
-		// {
-		// case GCC_X64:
-
-		// 	this.cpp = (file, headers, includes_global, includes_local, location, flags) =>
-		// 	{
-		// 		const { dir, base, ext, name } = path.parse(file);
-
-		// 		let out = '';
-
-		// 		out += `$(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o } : ${ dir }/${ base } ${ headers.join(' ') }\n`;
-
-		// 		out += `\t${ mkdir(`$(BUILD)/${ location }/${ o }/${ dir }`) } && ${ mkdir(`$(BUILD)/${ location }/${ s }/${ dir }`) } && `;
-
-		// 		out += `${ C_EXT.includes(ext) ? C_COMPILER : CPP_COMPILER } ${ dir }/${ base } ${ C_EXT.includes(ext) ? C_COMPILER_ARG : `${ CPP_COMPILER_ARG } $(CUSTOM_CPPFLAGS)` } ${ flags || '' } ${ includes_global.map((include) => `-I ${ include }`).join(' ') } ${ includes_local.map((include) => `-I ${ include }`).join(' ') } -o $(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o }`;
-
-		// 		out += ` && objdump -d -M intel -S $(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o } > $(BUILD)/${ location }/${ s }/${ dir }/${ name }.${ s }`;
-
-		// 		this.output += `${ out }\n\n`;
-		// 	};
-
-		// 	break;
-
-		// case MSVS_X64:
-
-		// 	this.cpp = (file, headers, includes_global, includes_local, location) =>
-		// 	{
-		// 		const { dir, base, ext, name } = path.parse(file);
-
-		// 		let out = '';
-
-		// 		out += `$(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o } : ${ dir }/${ base } ${ headers.join(' ') }\n`;
-
-		// 		out += `\t${ mkdir(`$(BUILD)/${ location }/${ o }/${ dir }`) } && ${ mkdir(`$(BUILD)/${ location }/${ s }/${ dir }`) } && `;
-
-		// 		out += `${ C_EXT.includes(ext) ? C_COMPILER : CPP_COMPILER } ${ dir }/${ base } ${ C_EXT.includes(ext) ? C_COMPILER_ARG : `${ CPP_COMPILER_ARG } $(CUSTOM_CPPFLAGS)` } ${ includes_global.map((include) => `/I${ include }`).join(' ') } ${ includes_local.map((include) => `/I${ include }`).join(' ') } /Fo$(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o }`;
-
-		// 		out += ` /FA /Fa$(BUILD)/${ location }/${ s }/${ dir }/${ name }.${ s }`;
-
-		// 		this.output += `${ out }\n\n`;
-		// 	};
-
-		// 	break;
-
-		// case EMCC_X64:
-
-		// 	this.cpp = (file, headers, includes_global, includes_local, location) =>
-		// 	{
-		// 		const { dir, base, ext, name } = path.parse(file);
-
-		// 		let out = '';
-
-		// 		out += `$(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o } : ${ dir }/${ base } ${ headers.join(' ') }\n`;
-
-		// 		out += `\t${ mkdir(`$(BUILD)/${ location }/${ o }/${ dir }`) } && ${ mkdir(`$(BUILD)/${ location }/${ s }/${ dir }`) } && `;
-
-		// 		out += `${ C_EXT.includes(ext) ? C_COMPILER : CPP_COMPILER } ${ dir }/${ base } ${ C_EXT.includes(ext) ? C_COMPILER_ARG : `${ CPP_COMPILER_ARG } $(CUSTOM_CPPFLAGS)` } ${ includes_global.map((include) => `-I ${ include }`).join(' ') } ${ includes_local.map((include) => `-I ${ include }`).join(' ') } -o $(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o }`;
-
-		// 		// emcc object file to (?) assembly
-
-		// 		this.output += `${ out }\n\n`;
-		// 	};
-
-		// 	break;
-
-		// case LLVM_WASM_X64:
-
-		// 	this.cpp = (file, headers, includes_global, includes_local, location) =>
-		// 	{
-		// 		const { dir, base, ext, name } = path.parse(file);
-
-		// 		let out = '';
-
-		// 		out += `$(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o } : ${ dir }/${ base } ${ headers.join(' ') }\n`;
-
-		// 		out += `\t${ mkdir(`$(BUILD)/${ location }/${ o }/${ dir }`) } && ${ mkdir(`$(BUILD)/${ location }/${ s }/${ dir }`) } && `;
-
-		// 		out += `${ C_EXT.includes(ext) ? C_COMPILER : CPP_COMPILER } ${ dir }/${ base } ${ C_EXT.includes(ext) ? C_COMPILER_ARG : `${ CPP_COMPILER_ARG } $(CUSTOM_CPPFLAGS)` } ${ includes_global.map((include) => `-I ${ include }`).join(' ') } ${ includes_local.map((include) => `-I ${ include }`).join(' ') } -o $(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o }`;
-
-		// 		// clang object file to llvm assembly
-
-		// 		this.output += `${ out }\n\n`;
-		// 	};
-
-		// 	break;
-
-		// default:
-		// }
-
-
-
-		this.asm = (file, location = 'internal') =>
-		{
-			const { dir, name } = path.parse(file);
-
-			let out = '';
-
-			out += `$(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o } : $(SRC)/${ dir }/${ name }.${ s }\n`;
-
-			out += `\t${ mkdir(`$(BUILD)/${ location }/${ o }/${ dir }`) } && `;
-
-			out += `${ ASSEMBLER } $(SRC)/${ dir }/${ name }.${ s } ${ ASSEMBLER_ARG } ${ OUT_OBJ }$(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o }`;
-
-			this.output += `${ out }\n\n`;
-		};
-
-		// switch (this.env)
-		// {
-		// case GCC_X64:
-
-		// 	this.asm = (file, location = 'internal') =>
-		// 	{
-		// 		const { dir, name } = path.parse(file);
-
-		// 		let out = '';
-
-		// 		out += `$(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o } : $(SRC)/${ dir }/${ name }.${ s }\n`;
-
-		// 		out += `\t${ mkdir(`$(BUILD)/${ location }/${ o }/${ dir }`) } && `;
-
-		// 		out += `${ ASSEMBLER } $(SRC)/${ dir }/${ name }.${ s } ${ ASSEMBLER_ARG } ${ OUT }$(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o }`;
-
-		// 		this.output += `${ out }\n\n`;
-		// 	};
-
-		// 	break;
-
-		// case MSVS_X64:
-
-		// 	this.asm = (file, location = 'internal') =>
-		// 	{
-		// 		const { dir, name } = path.parse(file);
-
-		// 		let out = '';
-
-		// 		out += `$(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o } : $(SRC)/${ dir }/${ name }.${ s }\n`;
-
-		// 		out += `\t${ mkdir(`$(BUILD)/${ location }/${ o }/${ dir }`) } && `;
-
-		// 		out += `${ ASSEMBLER } $(SRC)/${ dir }/${ name }.${ s } ${ ASSEMBLER_ARG } ${ OUT }$(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o }`;
-		// 		// out += `${ ASSEMBLER } ${ dir }/${ name }.${ s } ${ ASSEMBLER_ARG } -o $(BUILD)/${ location }/${ o }/${ dir }/${ name }.${ o }`;
-
-		// 		this.output += `${ out }\n\n`;
-		// 	};
-
-		// 	break;
-
-		// default:
-		// }
-
-
-
-		// this.static = (name, files = [], makefile) =>
-		// {
-		// 	let out = '';
-
-		// 	out += `${ name }.${ a } : ${ files.join(' ') }\n`;
-
-		// 	out += `\t${ MAKE_TOOL } ${ MAKE_TOOL_ARG } ${ MAKE_TOOL_MAKEFILE_ARG } ${ makefile }`;
-
-		// 	this.output += `${ out }\n\n`;
-		// };
-
-
-
-		// switch (this.env)
-		// {
-		// case GCC_X64:
-
-		// 	this.linkStatic = (target_name, _options) =>
-		// 	{
-		// 		const static_libraries = makeArray(_options?.static_libraries);
-		// 		const source_files_internal = makeArray(_options?.source_files?.internal);
-		// 		const source_files_external = makeArray(_options?.source_files?.external);
-
-		// 		const linked_units =
-		// 		[
-		// 			`${ source_files_internal.map((file) => `$(BUILD)/internal/${ o }/${ file }.${ o }`).join(' ') }`,
-		// 			`${ source_files_external.map((file) => `$(BUILD)/external/${ o }/${ file }.${ o }`).join(' ') }`,
-		// 			`${
-		// 				static_libraries
-		// 					.map
-		// 					(
-		// 						(file) =>
-		// 						{
-		// 							if (file.watch)
-		// 							{
-		// 								for (const key in _options.variables)
-		// 								{
-		// 									LOG(444, replaceVar(file.watch, key, _options.variables[key]))
-		// 								}
-
-		// 								file.watch = replaceVar(file.watch, key, _options.variables[key]);
-		// 							}
-
-		// 							return `${ file.library || file }.${ a }`
-		// 						},
-		// 					)
-		// 					.join(' ')
-		// 			}`,
-		// 		].join(' ');
-
-		// 		let out = '';
-
-		// 		out += `$(BUILD)/output/${ a }/${ target_name }.${ a } : ${ linked_units }\n`;
-
-		// 		out += `\t${ mkdir(`$(BUILD)/output/${ a }`) } && ${ mkdir(`$(BUILD)/output/${ s }`) } && `;
-
-		// 		out += `${ BUILDER } ${ linked_units } ${ BUILDER_ARG } -o $(BUILD)/output/${ a }/${ target_name }.${ a }`;
-
-		// 		out += ` && objdump -d -M intel -S $(BUILD)/output/${ a }/${ target_name }.${ a } > $(BUILD)/output/${ s }/${ target_name }.${ s }`;
-
-		// 		// this.output += `${ out }\n\n`;
-		// 		this.output = `${ out }\n\n${ this.output }`;
-		// 	};
-
-		// 	break;
-
-		// case MSVS_X64:
-
-		// 	this.linkStatic = (target_name, _options) =>
-		// 	{
-		// 		const static_libraries = makeArray(_options?.static_libraries);
-		// 		const source_files_internal = makeArray(_options?.source_files?.internal);
-		// 		const source_files_external = makeArray(_options?.source_files?.external);
-
-		// 		const linked_units =
-		// 		[
-		// 			`${ source_files_internal.map((file) => `$(BUILD)/internal/${ o }/${ file }.${ o }`).join(' ') }`,
-		// 			`${ source_files_external.map((file) => `$(BUILD)/external/${ o }/${ file }.${ o }`).join(' ') }`,
-		// 			`${
-		// 				static_libraries
-		// 					.map
-		// 					(
-		// 						(file) =>
-		// 						{
-		// 							return `${ file.library || file }.${ a }`
-		// 						},
-		// 					)
-		// 					.join(' ')
-		// 			}`,
-		// 		].join(' ');
-
-		// 		let out = '';
-
-		// 		out += `$(BUILD)/output/${ a }/${ target_name }.${ a } : ${ linked_units }\n`;
-
-		// 		out += `\t${ mkdir(`$(BUILD)/output/${ a }`) } && && ${ mkdir(`$(BUILD)/output/${ s }`) } && `;
-
-		// 		out += `${ BUILDER } ${ linked_units } ${ BUILDER_ARG } /OUT:$(BUILD)/output/${ a }/${ target_name }.${ a }`;
-
-		// 		out += ` && dumpbin /disasm $(BUILD)/output/${ a }/${ target_name }.${ a } /out:$(BUILD)/output/${ s }/${ target_name }.${ s }`;
-
-		// 		// this.output += `${ out }\n\n`;
-		// 		this.output = `${ out }\n\n${ this.output }`;
-		// 	};
-
-		// 	break;
-
-		// case EMCC_X64:
-
-		// 	this.linkStatic = (target_name, _options) =>
-		// 	{
-		// 		const static_libraries = makeArray(_options?.static_libraries);
-		// 		const source_files_internal = makeArray(_options?.source_files?.internal);
-		// 		const source_files_external = makeArray(_options?.source_files?.external);
-
-		// 		const linked_units =
-		// 		[
-		// 			`${ source_files_internal.map((file) => `$(BUILD)/internal/${ o }/${ file }.${ o }`).join(' ') }`,
-		// 			`${ source_files_external.map((file) => `$(BUILD)/external/${ o }/${ file }.${ o }`).join(' ') }`,
-		// 			`${
-		// 				static_libraries
-		// 					.map
-		// 					(
-		// 						(file) =>
-		// 						{
-		// 							return `${ file.library || file }.${ a }`
-		// 						},
-		// 					)
-		// 					.join(' ')
-		// 			}`,
-		// 		].join(' ');
-
-		// 		let out = '';
-
-		// 		out += `$(BUILD)/output/${ a }/${ target_name }.${ a } : ${ linked_units }\n`;
-
-		// 		// out += `\t${ mkdir(`$(BUILD)/output/${ a }`) } && ${ mkdir(`$(BUILD)/output/${ s }`) } && `;
-		// 		out += `\t${ mkdir(`$(BUILD)/output/${ a }`) } && `;
-
-		// 		out += `${ BUILDER } ${ linked_units } ${ BUILDER_ARG } -o $(BUILD)/output/${ a }/${ target_name }.${ a }`;
-
-		// 		// out += ` && objdump -d -M intel -S $(BUILD)/output/${ a }/${ target_name }.${ a } > $(BUILD)/output/${ s }/${ target_name }.${ s }`;
-
-		// 		// this.output += `${ out }\n\n`;
-		// 		this.output = `${ out }\n\n${ this.output }`;
-		// 	};
-
-		// 	break;
-
-		// case LLVM_WASM_X64:
-
-		// 	this.linkStatic = (target_name, _options) =>
-		// 	{
-		// 		const static_libraries = makeArray(_options?.static_libraries);
-		// 		const source_files_internal = makeArray(_options?.source_files?.internal);
-		// 		const source_files_external = makeArray(_options?.source_files?.external);
-
-		// 		const linked_units =
-		// 		[
-		// 			`${ source_files_internal.map((file) => `$(BUILD)/internal/${ o }/${ file }.${ o }`).join(' ') }`,
-		// 			`${ source_files_external.map((file) => `$(BUILD)/external/${ o }/${ file }.${ o }`).join(' ') }`,
-		// 			`${
-		// 				static_libraries
-		// 					.map
-		// 					(
-		// 						(file) =>
-		// 						{
-		// 							return `${ file.library || file }.${ a }`
-		// 						},
-		// 					)
-		// 					.join(' ')
-		// 			}`,
-		// 		].join(' ');
-
-		// 		let out = '';
-
-		// 		out += `$(BUILD)/output/${ a }/${ target_name }.${ a } : ${ linked_units }\n`;
-
-		// 		out += `\t${ mkdir(`$(BUILD)/output/${ a }`) } && ${ mkdir(`$(BUILD)/output/${ s }`) } && `;
-		// 		out += `\t${ mkdir(`$(BUILD)/output/${ a }`) } && `;
-
-		// 		out += `${ BUILDER } ${ linked_units } ${ BUILDER_ARG } -o $(BUILD)/output/${ a }/${ target_name }.${ a }`;
-
-		// 		out += ` && wasm-decompile $(BUILD)/output/${ a }/${ target_name }.${ a } -o $(BUILD)/output/${ s }/${ target_name }.${ s }`;
-
-		// 		// this.output += `${ out }\n\n`;
-		// 		this.output = `${ out }\n\n${ this.output }`;
-		// 	};
-
-		// 	break;
-
-		// default:
-		// }
-
-
-
-		{
-			let out = '';
-			let system_libraries = null;
-			let linked_units = null;
-
-
-
-			const doCommon = (_options) =>
-			{
-				system_libraries = makeArray(_options?.system_libraries);
-				const source_files_internal = makeArray(_options?.source_files?.internal);
-				const source_files_external = makeArray(_options?.source_files?.external);
-				const static_libraries = makeArray(_options?.static_libraries);
-
-				linked_units =
-				[
-					`${ source_files_internal.map((file) => `$(BUILD)/internal/${ o }/${ file }.${ o }`).join(' ') }`,
-					`${ source_files_external.map((file) => `$(BUILD)/external/${ o }/${ file }.${ o }`).join(' ') }`,
-					`${
-						static_libraries
-							.map
-							(
-								(file) =>
-								{
-									if (file.watch)
-									{
-										for (const key in _options.variables)
-										{
-											file.watch = replaceVar(file.watch, key, _options.variables[key]);
-										}
-
-										_options.static_library_dependencies.push
-										(
-											`${ file.library }.${ a } : ${ collectFiles(file.watch, _options.variables).join(' ') }\n\t${ file.do }\n\n`,
-										);
-									}
-
-									return `${ file.library || file }.${ a }`
-								},
-							)
-							.join(' ')
-					}`,
-				].join(' ');
-			};
-
-
-
-			const doCommonStatic = (target_name, _options) =>
-			{
-				doCommon(_options);
-
-				out += `$(BUILD)/output/${ a }/${ target_name }.${ a } : ${ linked_units }\n`;
-
-				out += `\t${ mkdir(`$(BUILD)/output/${ a }`) } && ${ mkdir(`$(BUILD)/output/${ s }`) } && `;
-
-				// return out;
-			};
-
-
-
-			this.linkStatic = (target_name, _options) =>
-			{
-				doCommonStatic(target_name, _options);
-
-				switch (this.env)
-				{
-				case GCC_X64:
-				{
-					out += `${ BUILDER } ${ linked_units } ${ system_libraries.map((lib) => `-l ${ lib }`).join(' ') } ${ BUILDER_ARG } ${ OUT_BIN }$(BUILD)/output/${ a }/${ target_name }.${ a }`;
-
-					out += ` && objdump -d -M intel -S $(BUILD)/output/${ a }/${ target_name }.${ a } > $(BUILD)/output/${ s }/${ target_name }.${ s }`;
-
-					break;
-				}
-
-				case MSVS_X64:
-				{
-					out += `${ BUILDER } ${ linked_units } ${ system_libraries.join(' ') } ${ BUILDER_ARG } ${ OUT_BIN }$(BUILD)/output/${ a }/${ target_name }.${ a }`;
-
-					out += ` && dumpbin /disasm $(BUILD)/output/${ a }/${ target_name }.${ a } /out:$(BUILD)/output/${ s }/${ target_name }.${ s }`;
-
-					break;
-				}
-
-				case EMCC_X64:
-				{
-					out += `${ BUILDER } ${ linked_units } ${ BUILDER_ARG } ${ OUT_BIN }$(BUILD)/output/${ a }/${ target_name }.${ a }`;
-
-					break;
-				}
-
-				case LLVM_WASM_X64:
-				{
-					out += `${ BUILDER } ${ linked_units } ${ BUILDER_ARG } ${ OUT_BIN }$(BUILD)/output/${ a }/${ target_name }.${ a }`;
-
-					out += ` && wasm-decompile $(BUILD)/output/${ a }/${ target_name }.${ a } -o $(BUILD)/output/${ s }/${ target_name }.${ s }`;
-
-					break;
-				}
-
-				default:
-				}
-
-				this.output = `${ out }\n\n${ this.output }`;
-			};
-
-
-
-			const doCommonBin = (target_name, _options) =>
-			{
-				// system_libraries = makeArray(_options?.system_libraries);
-				// const static_libraries = makeArray(_options?.static_libraries);
-				// const source_files_internal = makeArray(_options?.source_files?.internal);
-				// const source_files_external = makeArray(_options?.source_files?.external);
-
-				// linked_units =
-				// [
-				// 	`${ source_files_internal.map((file) => `$(BUILD)/internal/${ o }/${ file }.${ o }`).join(' ') }`,
-				// 	`${ source_files_external.map((file) => `$(BUILD)/external/${ o }/${ file }.${ o }`).join(' ') }`,
-				// 	`${
-				// 		static_libraries
-				// 			.map
-				// 			(
-				// 				(file) =>
-				// 				{
-				// 					if (file.watch)
-				// 					{
-				// 						for (const key in _options.variables)
-				// 						{
-				// 							file.watch = replaceVar(file.watch, key, _options.variables[key]);
-				// 						}
-
-				// 						_options.static_library_dependencies.push
-				// 						(
-				// 							`${ file.library }.${ a } : ${ collectFiles(file.watch, _options.variables).join(' ') }\n\t${ file.do }\n\n`,
-				// 						);
-				// 					}
-
-				// 					return `${ file.library || file }.${ a }`
-				// 				},
-				// 			)
-				// 			.join(' ')
-				// 	}`,
-				// ].join(' ');
-
-				doCommon(_options);
-
-				out += `$(BUILD)/output/${ bin }/${ target_name }.${ bin } : ${ linked_units }\n`;
-
-				out += `\t${ mkdir(`$(BUILD)/output/${ bin }`) } && ${ mkdir(`$(BUILD)/output/${ s }`) } && `;
-
-				// return out;
-			};
-
-
-
-			this.linkBin = (target_name, _options) =>
-			{
-				doCommonBin(target_name, _options);
-
-				switch (this.env)
-				{
-				case GCC_X64:
-				{
-					out += `${ LINKER } ${ linked_units } ${ system_libraries.map((lib) => `-l ${ lib }`).join(' ') } ${ LINKER_ARG } ${ OUT_BIN }$(BUILD)/output/${ bin }/${ target_name }.${ bin }`;
-
-					out += ` && objdump -d -M intel -S $(BUILD)/output/${ bin }/${ target_name }.${ bin } > $(BUILD)/output/${ s }/${ target_name }.${ s }`;
-
-					break;
-				}
-
-				case MSVS_X64:
-				{
-					out += `${ LINKER } ${ linked_units } ${ system_libraries.join(' ') } ${ LINKER_ARG } ${ OUT_BIN }$(BUILD)/output/${ bin }/${ target_name }.${ bin }`;
-
-					out += ` && dumpbin /disasm $(BUILD)/output/${ bin }/${ target_name }.${ bin } /out:$(BUILD)/output/${ s }/${ target_name }.${ s }`;
-
-					break;
-				}
-
-				case EMCC_X64:
-				{
-					out += `${ LINKER } ${ linked_units } ${ LINKER_ARG } ${ OUT_BIN }$(BUILD)/output/${ bin }/${ target_name }.${ bin }`;
-
-					break;
-				}
-
-				case LLVM_WASM_X64:
-				{
-					out += `${ LINKER } ${ linked_units } ${ LINKER_ARG } ${ OUT_BIN }$(BUILD)/output/${ bin }/${ target_name }.${ bin }`;
-
-					out += ` && wasm-decompile $(BUILD)/output/${ bin }/${ target_name }.${ bin } -o $(BUILD)/output/${ s }/${ target_name }.${ s }`;
-
-					break;
-				}
-
-				default:
-				}
-
-				this.output = `${ out }\n\n${ this.output }`;
-			};
-		}
+		this.mkdir = mkdir;
 	}
+
+
+
+	// make includes overriding possibility
+	// make specific compiler arguments and arguments overriding possibility
+	cpp (entry, head_entry, location)
+	{
+		const { dir, ext } = path.parse(entry.file);
+
+		let output = '';
+
+		output += `$(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o } : ${ entry.file } ${ entry.watch_files.map((_item) => _item.file || _item).join(' ') } ${ entry.watch_directories }\n`;
+
+		output += `\t${ this.mkdir(`$(BUILD)/${ location }/${ this.o }/${ dir }`) } && ${ this.mkdir(`$(BUILD)/${ location }/${ this.s }/${ dir }`) } && `;
+
+		output += `${ C_EXT.includes(ext) ? this.C_COMPILER : this.CPP_COMPILER } ${ entry.file } ${ C_EXT.includes(ext) ? this.C_COMPILER_ARG : `${ this.CPP_COMPILER_ARG }` } ${ head_entry.flags_additional } ${ entry.flags_additional } ${ head_entry.include_directories.map((include) => `${ this.INC }${ include }`).join(' ') } ${ entry.include_directories.map((include) => `${ this.INC }${ include }`).join(' ') } ${ this.OUT_OBJ }$(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o }`;
+
+		switch (this.env)
+		{
+		case GCC_X64:
+		{
+			output += ` && objdump -d -M intel -S $(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o } > $(BUILD)/${ location }/${ this.s }/${ entry.file }.${ this.o }.${ this.s }`;
+
+			break;
+		}
+
+		case MSVS_X64:
+		{
+			output += ` /FA /Fa$(BUILD)/${ location }/${ this.s }/${ entry.file }.${ this.o }.${ this.s }`;
+
+			break;
+		}
+
+		case EMCC_X64:
+		{
+			// emcc object file to (?) assembly
+
+			break;
+		}
+
+		case LLVM_WASM_X64:
+		{
+			// clang object file to llvm assembly
+
+			break;
+		}
+
+		default:
+		}
+
+		return output;
+	}
+
+
+
+	asm (entry, location)
+	{
+		const { dir } = path.parse(entry.file);
+
+		let output = '';
+
+		output += `$(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o } : ${ entry.file }\n`;
+
+		output += `\t${ this.mkdir(`$(BUILD)/${ location }/${ this.o }/${ dir }`) } && `;
+
+		output += `${ this.ASSEMBLER } ${ entry.file } ${ this.ASSEMBLER_ARG } ${ this.OUT_OBJ }$(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o }`;
+
+		return output;
+	}
+
+
+
+	static (entry)
+	{
+		let output = '';
+
+		output += `$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a } : ${ entry.watch_files2.join(' ') }\n`;
+
+		output += `\t${ this.mkdir(`$(BUILD)/output/${ this.a }`) } && ${ this.mkdir(`$(BUILD)/output/${ this.s }`) } && `;
+
+		switch (this.env)
+		{
+		case GCC_X64:
+		{
+			output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
+
+			output += ` && objdump -d -M intel -S $(BUILD)/output/${ this.a }/${ entry.name }.${ this.a } > $(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
+
+			break;
+		}
+
+		case MSVS_X64:
+		{
+			output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
+
+			output += ` && dumpbin /disasm $(BUILD)/output/${ this.a }/${ entry.name }.${ this.a } /out:$(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
+
+			break;
+		}
+
+		case EMCC_X64:
+		{
+			output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
+
+			break;
+		}
+
+		case LLVM_WASM_X64:
+		{
+			output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
+
+			output += ` && wasm-decompile $(BUILD)/output/${ this.a }/${ entry.name }.${ this.a } -o $(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
+
+			break;
+		}
+
+		default:
+		}
+
+		return output;
+	}
+
+
+
+	binary (entry)
+	{
+		let output = '';
+
+		output += `$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin } : ${ entry.watch_files2.join(' ') }\n`;
+
+		output += `\t${ this.mkdir(`$(BUILD)/output/${ this.bin }`) } && ${ this.mkdir(`$(BUILD)/output/${ this.s }`) } && `;
+
+		switch (this.env)
+		{
+		case GCC_X64:
+		{
+			output += `${ this.LINKER } ${ entry.watch_files2.join(' ') } ${ entry.system_libraries.map((lib) => `-l ${ lib }`).join(' ') } ${ this.LINKER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin }`;
+
+			output += ` && objdump -d -M intel -S $(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin } > $(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
+
+			break;
+		}
+
+		case MSVS_X64:
+		{
+			output += `${ this.LINKER } ${ entry.watch_files2.join(' ') } ${ entry.system_libraries.join(' ') } ${ this.LINKER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin }`;
+
+			output += ` && dumpbin /disasm $(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin } /out:$(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
+
+			break;
+		}
+
+		case EMCC_X64:
+		{
+			output += `${ this.LINKER } ${ entry.watch_files2.join(' ') } ${ this.LINKER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin }`;
+
+			break;
+		}
+
+		case LLVM_WASM_X64:
+		{
+			output += `${ this.LINKER } ${ entry.watch_files2.join(' ') } ${ this.LINKER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin }`;
+
+			output += ` && wasm-decompile $(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin } -o $(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
+
+			break;
+		}
+
+		default:
+		}
+
+		return output;
+	}
+
+
 
 	create (options)
 	{
-		const build_type = options?.build_type || 'bin';
-		const target_name = options?.target_name || 'build';
-
-		const source_files = { internal: [], external: [] };
-		const static_libraries = [];
-		const static_library_dependencies = [];
-		const include_directories = makeArray(options?.include_directories);
-		const system_libraries = makeArray(options?.system_libraries);
-		const flags_additional = makeArray(options?.flags_additional);
-
-		[ 'internal', 'external' ].forEach((location) =>
-		{
-			if (options?.source_files?.[location]?.cpp)
-			{
-				const files = makeArray(options.source_files[location].cpp);
-
-				files.forEach
-				(
-					(file) =>
-					{
-						if (typeof file === 'string')
-						{
-							const { dir, name } = path.parse(file);
-
-							source_files[location].push(`${ dir }/${ name }`);
-
-							this.cpp(file, [], include_directories, [], location, flags_additional, []);
-						}
-						else if (typeof file === 'object')
-						{
-							const { dir, name } = path.parse(file.source);
-
-							source_files[location].push(`${ dir }/${ name }`);
-
-							this.cpp(file.source, makeArray(file.headers), include_directories, makeArray(file.include_directories), location, flags_additional, file.flags_additional);
-
-							if (file.custom_dependencies)
-							{
-								const custom = makeArray(file.custom_dependencies);
-
-								custom.forEach
-								(
-									(elm) =>
-									{
-										this.output += `${ elm.join('') }\n\n`;
-									},
-								);
-							}
-						}
-					},
-				);
-			}
-
-			if (options?.source_files?.[location]?.asm)
-			{
-				const files = makeArray(options.source_files[location].asm);
-
-				files.forEach
-				(
-					(file) =>
-					{
-						if (typeof file === 'string')
-						{
-							const { dir, name } = path.parse(file);
-
-							source_files[location].push(`${ dir }/${ name }`);
-
-							this.asm(file, location);
-						}
-						else if (typeof file === 'object')
-						{
-							const { dir, name } = path.parse(file.source);
-
-							source_files[location].push(`${ dir }/${ name }`);
-
-							this.asm(file.source, location);
-
-							if (file.custom_dependencies)
-							{
-								const custom = makeArray(file.custom_dependencies);
-
-								custom.forEach
-								(
-									(elm) =>
-									{
-										this.output += `${ elm.join('') }\n\n`;
-									},
-								);
-							}
-						}
-					},
-				);
-			}
-		});
-
-		if (options?.static_libraries)
-		{
-			static_libraries.push(...makeArray(options.static_libraries));
-		}
-
-
+		options.entries = makeArray(options.entries);
 
 		const variables = {};
 
-		if (options?.variables?.[this.env])
+		if (options.variables?.[this.env])
 		{
 			for (const key in options.variables[this.env])
 			{
@@ -1616,57 +1107,138 @@ class Make
 			}
 		}
 
-		if (build_type === 'static')
+		// entry is each item in "watch_files" collection
+		// head entry is each item in "entries" collection
+		const statements =
+		[
+			`ENV=${ this.env }
+SRC=${ this.dirname }/src
+BUILD=${ this.dirname }/build/$(ENV)
+${ (options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).map((elm) => `${ elm }=${ options.variables[this.env][elm] }`) : []).join('\n') }`,
+		];
+
+		const parseEntry = (entry, head_entry) =>
 		{
-			this.linkStatic
-			(
-				target_name,
-
-				{
-					source_files,
-					static_libraries,
-					static_library_dependencies,
-					system_libraries,
-					variables,
-				},
-			);
-		}
-		else if (build_type === 'bin')
-		{
-			this.linkBin
-			(
-				target_name,
-
-				{
-					source_files,
-					static_libraries,
-					static_library_dependencies,
-					system_libraries,
-					variables,
-				},
-			);
-		}
-
-		static_library_dependencies.forEach
-		(
-			(_item) =>
+			if (typeof entry === 'string')
 			{
-				this.output += _item;
-			},
-		);
+				entry = { file: entry };
+			}
 
-		// makefile variables
-		this.output =
-			`${
-				[
-					`ENV=${ this.env }`,
-					`SRC=${ this.dirname }/src`,
-					`BUILD=${ this.dirname }/build/${ this.env }`,
-					...(options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).map((elm) => `${ elm }=${ options.variables[this.env][elm] }`) : []),
-				].join('\n')
-			}\n\n${ this.output }`;
+			entry.include_directories = makeArray(entry.include_directories);
+			entry.watch_files = makeArray(entry.watch_files);
+			entry.watch_directories = makeArray(entry.watch_directories);
 
+			entry.watch_directories =
+				entry.watch_directories.map
+				(
+					(directory) =>
+					{
+						for (const key in variables)
+						{
+							directory = replaceVar(directory, key, variables[key]);
+						}
 
+						return directory;
+					},
+				);
+
+			entry.watch_directories =
+				entry.watch_directories.map((directory) => collectFiles(directory, variables).join(' ')).join(' ');
+
+			entry.flags_additional = entry.flags_additional || '';
+
+			if (entry.type === 'static' || entry.type === 'bin')
+			{
+				entry.name = entry.name || 'build';
+				entry.system_libraries = makeArray(entry.system_libraries);
+
+				entry.watch_files2 =
+					entry.watch_files.map
+					(
+						(_item) =>
+						{
+							const file = _item.file || _item;
+
+							const { ext } = path.parse(file);
+
+							if (ext === '.c' || ext === '.cpp' || ext === '.s' || ext === '.asm')
+							{
+								const location = file.includes('$(SRC)') ? 'internal' : 'external';
+
+								return `$(BUILD)/${ location }/${ this.o }/${ file }.${ this.o }`;
+							}
+
+							return file;
+						},
+					);
+
+				if (entry.type === 'static')
+				{
+					statements.push(this.static(entry));
+				}
+				else if (entry.type === 'bin')
+				{
+					statements.push(this.binary(entry));
+				}
+			}
+			else
+			{
+				const { ext } = path.parse(entry.file);
+
+				// LOG(ext.replace(/\.|\(|\)/g, '').split('/').filter((_ext) => ))
+
+				if (ext === '.c' || ext === '.cpp')
+				{
+					const location = entry.file.includes('$(SRC)') ? 'internal' : 'external';
+
+					statements.push
+					(
+						this.cpp
+						(
+							entry,
+							head_entry,
+							location,
+						),
+					);
+				}
+				if (ext === '.s' || ext === '.asm' || ext === '.$(ASM_EXT)')
+				{
+					const location = entry.file.includes('$(SRC)') ? 'internal' : 'external';
+
+					statements.push
+					(
+						this.asm
+						(
+							entry,
+							location,
+						),
+					);
+				}
+				else if (entry.do)
+				{
+					if (typeof entry.do === 'object')
+					{
+						entry.do = entry.do.join('');
+					}
+
+					let out = '';
+
+					out += `${ entry.file } : ${ entry.watch_files.map((_item) => _item.file || _item).join(' ') } ${ entry.watch_directories }\n`;
+
+					out += `\t${ entry.do }`;
+
+					statements.push(out);
+				}
+			}
+
+			entry.watch_files.map((_entry) => parseEntry(_entry, head_entry));
+		};
+
+		makeArray(options.entries[0]).forEach((entry) => parseEntry(entry, entry));
+
+		statements[0] +=
+			`\nASM_EXT=${ this.s }
+LIB_EXT=${ this.a }`;
 
 		const makefiles = `${ this.dirname }/makefiles`;
 
@@ -1674,7 +1246,16 @@ class Make
 
 		const makefile = `${ env }/Makefile`;
 
-		this.output = `${ this.output.trim().replace(/( )+/g, ' ').replace(/(\/)+/g, '/').replace(/\/\$\(SRC\)\//g, '/').replace(/\/\$\(SRC\) /g, ' ') }\n`;
+		let output =
+			statements
+				.join('\n\n')
+				.trim()
+				.replace(/( )+/g, ' ')
+				.replace(/(\/)+/g, '/')
+				.replace(/\/\$\(SRC\)\//g, '/')
+				.replace(/\/\$\(SRC\) /g, ' ');
+
+		output = `${ output }\n`;
 
 		// // remove build folder
 		// if (fs.existsSync(`${ this.dirname }/build/${ this.env }`))
@@ -1695,7 +1276,7 @@ class Make
 		}
 
 		fs.mkdirSync(env);
-		fs.appendFileSync(makefile, this.output);
+		fs.appendFileSync(makefile, output);
 
 		const proc = child_process.exec(`make -f ${ makefile }`, { encoding: 'utf8' });
 

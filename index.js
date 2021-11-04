@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 
+
 /*
 eslint-disable
 
@@ -254,15 +255,15 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-		case LLVM_WASM_X64:
 
 			a = 'a';
 
 			break;
 
+		case LLVM_WASM_X64:
 		case EMCC_X64:
 
-			a = 'a';
+			a = 'o';
 
 			break;
 
@@ -485,7 +486,8 @@ class Make
 
 		case LLVM_WASM_X64:
 
-			C_COMPILER_ARG = '-c --target=wasm64 --no-standard-libraries -Wall -Wextra -Wpedantic';
+			// C_COMPILER_ARG = '-c --target=wasm32 --no-standard-libraries -Wall -Wextra -Wpedantic';
+			C_COMPILER_ARG = '-c --target=wasm32 -Wall -Wextra -Wpedantic';
 
 			break;
 
@@ -553,7 +555,8 @@ class Make
 
 		case LLVM_WASM_X64:
 
-			CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm32 -O3 -msimd128 --no-standard-libraries -Wall -Wextra -Wpedantic';
+			// CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm32 -O3 -msimd128 --no-standard-libraries -Wall -Wextra -Wpedantic';
+			CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm32 -O3 -msimd128 -Wall -Wextra -Wpedantic';
 
 			break;
 
@@ -582,7 +585,7 @@ class Make
 
 		case EMCC_X64:
 
-			BUILDER = 'emcc';
+			BUILDER = 'wasm-ld';
 
 			break;
 
@@ -615,13 +618,13 @@ class Make
 
 		case EMCC_X64:
 
-			BUILDER_ARG = '';
+			BUILDER_ARG = '-r -mwasm32 --export-all --no-entry';
 
 			break;
 
 		case LLVM_WASM_X64:
 
-			BUILDER_ARG = '-mwasm32 --export-all --no-entry';
+			BUILDER_ARG = '-r -mwasm32 --export-all --no-entry';
 
 			break;
 
@@ -698,7 +701,9 @@ class Make
 				'-s USE_ES6_IMPORT_META=0',
 				'-s ENVIRONMENT=web',
 				'-s EXPORTED_RUNTIME_METHODS=\'["ccall", "cwrap"]\'',
-				'-s ASSERTIONS=1',
+				'-s ASSERTIONS=0',
+				'-s DISABLE_EXCEPTION_CATCHING=1',
+				'-s USE_WEBGPU=1',
 			].join(' ');
 
 			break;
@@ -782,6 +787,8 @@ class Make
 
 		default:
 		}
+
+		this.MAKE_TOOL = MAKE_TOOL;
 
 
 
@@ -1185,9 +1192,7 @@ ${ (options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).ma
 			{
 				const { ext } = path.parse(entry.file);
 
-				// LOG(ext.replace(/\.|\(|\)/g, '').split('/').filter((_ext) => ))
-
-				if (ext === '.c' || ext === '.cpp')
+				if (ext.match(/\.(cc|cpp|c)/g))
 				{
 					const location = entry.file.includes('$(SRC)') ? 'internal' : 'external';
 
@@ -1201,7 +1206,7 @@ ${ (options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).ma
 						),
 					);
 				}
-				if (ext === '.s' || ext === '.asm' || ext === '.$(ASM_EXT)')
+				else if (ext.match(/\.(s|asm|\$\(ASM_EXT\))/g))
 				{
 					const location = entry.file.includes('$(SRC)') ? 'internal' : 'external';
 
@@ -1257,12 +1262,6 @@ LIB_EXT=${ this.a }`;
 
 		output = `${ output }\n`;
 
-		// // remove build folder
-		// if (fs.existsSync(`${ this.dirname }/build/${ this.env }`))
-		// {
-		// 	fs.rmdirSync(`${ this.dirname }/build/${ this.env }`, { recursive: true });
-		// }
-
 		if (fs.existsSync(makefiles))
 		{
 			if (fs.existsSync(env))
@@ -1278,7 +1277,7 @@ LIB_EXT=${ this.a }`;
 		fs.mkdirSync(env);
 		fs.appendFileSync(makefile, output);
 
-		const proc = child_process.exec(`make -f ${ makefile }`, { encoding: 'utf8' });
+		const proc = child_process.exec(`${ this.MAKE_TOOL } -f ${ makefile }`, { encoding: 'utf8' });
 
 		proc.stdout.on('data', LOG);
 		proc.stderr.on('data', (text) => LOG('\x1b[31m%s\x1b[0m', text));

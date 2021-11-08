@@ -2,6 +2,27 @@
 
 
 
+// LINUX SETUP
+
+// MAKE SETUP
+// sudo apt install make
+
+// GCC SETUP
+// sudo apt install gcc-10
+// sudo apt install g++-10
+// sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
+// sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
+// sudo apt install ld
+
+// _TODO: use with update-alternatives
+// CLANG SETUP
+// sudo apt install libc6-dev-i386 // x32 standard library headers
+// sudo apt install libstdc++-10-dev // standard library headers
+// sudo apt install clang-12 // bin: clang-12, clang++-12
+// sudo apt install lld-12 // bin: wasm-ld-12
+
+
+
 /*
 eslint-disable
 
@@ -150,7 +171,7 @@ const C_EXT = [ '.c' ];
 const GCC_X64 = 'gcc-x64';
 const MSVS_X64 = 'msvs-x64';
 const EMCC_X64 = 'emcc-x64';
-const LLVM_WASM_X64 = 'llvm-wasm-x64';
+const CLANG_WASM_X64 = 'clang-wasm-x64';
 
 
 
@@ -172,7 +193,7 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-		case LLVM_WASM_X64:
+		case CLANG_WASM_X64:
 		case EMCC_X64:
 
 			INC = '-I ';
@@ -199,7 +220,7 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-		case LLVM_WASM_X64:
+		case CLANG_WASM_X64:
 		case EMCC_X64:
 
 			OUT_OBJ = '-o ';
@@ -226,7 +247,7 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-		case LLVM_WASM_X64:
+		case CLANG_WASM_X64:
 		case EMCC_X64:
 
 			OUT_BIN = '-o ';
@@ -260,7 +281,7 @@ class Make
 
 			break;
 
-		case LLVM_WASM_X64:
+		case CLANG_WASM_X64:
 		case EMCC_X64:
 
 			a = 'o';
@@ -287,8 +308,8 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
+		case CLANG_WASM_X64:
 		case EMCC_X64:
-		case LLVM_WASM_X64:
 
 			o = 'o';
 
@@ -325,17 +346,17 @@ class Make
 
 			break;
 
-		case EMCC_X64:
-
-			break;
-
-		case LLVM_WASM_X64:
+		case CLANG_WASM_X64:
 
 			// wasm2wat
 			// s = 'wat';
 
 			// wasm-decompile
 			s = 'dcmp';
+
+			break;
+
+		case EMCC_X64:
 
 			break;
 
@@ -364,15 +385,15 @@ class Make
 
 			break;
 
-		case EMCC_X64:
+		case CLANG_WASM_X64:
 
-			bin = 'js';
+			bin = 'wasm';
 
 			break;
 
-		case LLVM_WASM_X64:
+		case EMCC_X64:
 
-			bin = 'wasm';
+			bin = 'js';
 
 			break;
 
@@ -445,15 +466,15 @@ class Make
 
 			break;
 
-		case EMCC_X64:
+		case CLANG_WASM_X64:
 
-			C_COMPILER = 'emcc';
+			C_COMPILER = 'clang-12';
 
 			break;
 
-		case LLVM_WASM_X64:
+		case EMCC_X64:
 
-			C_COMPILER = 'clang';
+			C_COMPILER = 'emcc';
 
 			break;
 
@@ -468,7 +489,7 @@ class Make
 		{
 		case GCC_X64:
 
-			C_COMPILER_ARG = '-c -m64 -msse3 -Ofast -funroll-loops -Wall -Wextra -Wpedantic';
+			C_COMPILER_ARG = '-c -m64 -msse3 -Ofast -funroll-loops -Wall -Wextra -Wpedantic -v';
 
 			break;
 
@@ -478,16 +499,16 @@ class Make
 
 			break;
 
-		case EMCC_X64:
+		case CLANG_WASM_X64:
 
-			C_COMPILER_ARG = '-c -O3 -msimd128 -msse -Wall -Wextra -Wpedantic';
+			// C_COMPILER_ARG = '-c --target=wasm32 --no-standard-libraries -Wall -Wextra -Wpedantic';
+			C_COMPILER_ARG = '-c --target=wasm32 --no-standard-libraries -Wall -Wextra -Wpedantic -v';
 
 			break;
 
-		case LLVM_WASM_X64:
+		case EMCC_X64:
 
-			// C_COMPILER_ARG = '-c --target=wasm32 --no-standard-libraries -Wall -Wextra -Wpedantic';
-			C_COMPILER_ARG = '-c --target=wasm32 -Wall -Wextra -Wpedantic';
+			C_COMPILER_ARG = '-c -O3 -msimd128 -msse -Wall -Wextra -Wpedantic -v';
 
 			break;
 
@@ -514,15 +535,15 @@ class Make
 
 			break;
 
-		case EMCC_X64:
+		case CLANG_WASM_X64:
 
-			CPP_COMPILER = 'emcc';
+			CPP_COMPILER = 'clang++-12';
 
 			break;
 
-		case LLVM_WASM_X64:
+		case EMCC_X64:
 
-			CPP_COMPILER = 'clang++';
+			CPP_COMPILER = 'emcc';
 
 			break;
 
@@ -537,7 +558,7 @@ class Make
 		{
 		case GCC_X64:
 
-			CPP_COMPILER_ARG = '-c -std=c++20 -m64 -msse3 -Ofast -funroll-loops -Wall -Wextra -Wpedantic -Wno-cpp';
+			CPP_COMPILER_ARG = '-c -std=c++20 -m64 -msse3 -Ofast -funroll-loops -Wall -Wextra -Wpedantic -Wno-cpp -v';
 
 			break;
 
@@ -549,14 +570,14 @@ class Make
 
 		case EMCC_X64:
 
-			CPP_COMPILER_ARG = '-c -std=c++20 -O3 -msimd128 -msse -Wall -Wextra -Wpedantic';
+			CPP_COMPILER_ARG = '-c -std=c++20 -O3 -msimd128 -msse -Wall -Wextra -Wpedantic -v';
 
 			break;
 
-		case LLVM_WASM_X64:
+		case CLANG_WASM_X64:
 
-			// CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm32 -O3 -msimd128 --no-standard-libraries -Wall -Wextra -Wpedantic';
-			CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm32 -O3 -msimd128 -Wall -Wextra -Wpedantic';
+			// CHANGE TO WASM64 ?
+			CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm32-unknown-unknown ---no-standard-libraries O3 -msimd128 -Wall -Wextra -Wpedantic -v -I /usr/include/c++/10 -I /usr/include -I /usr/include/x86_64-linux-gnu -I /usr/include/x86_64-linux-gnu/c++/10';
 
 			break;
 
@@ -583,15 +604,10 @@ class Make
 
 			break;
 
+		case CLANG_WASM_X64:
 		case EMCC_X64:
 
-			BUILDER = 'wasm-ld';
-
-			break;
-
-		case LLVM_WASM_X64:
-
-			BUILDER = 'wasm-ld';
+			BUILDER = 'wasm-ld-12';
 
 			break;
 
@@ -616,15 +632,10 @@ class Make
 
 			break;
 
+		case CLANG_WASM_X64:
 		case EMCC_X64:
 
-			BUILDER_ARG = '-r -mwasm32 --export-all --no-entry';
-
-			break;
-
-		case LLVM_WASM_X64:
-
-			BUILDER_ARG = '-r -mwasm32 --export-all --no-entry';
+			BUILDER_ARG = '-r -mwasm32 --export-all --no-entry' --allow-undefined;
 
 			break;
 
@@ -651,15 +662,15 @@ class Make
 
 			break;
 
-		case EMCC_X64:
+		case CLANG_WASM_X64:
 
-			LINKER = 'emcc';
+			LINKER = 'wasm-ld-12';
 
 			break;
 
-		case LLVM_WASM_X64:
+		case EMCC_X64:
 
-			LINKER = 'wasm-ld';
+			LINKER = 'emcc';
 
 			break;
 
@@ -689,6 +700,13 @@ class Make
 
 			break;
 
+		case CLANG_WASM_X64:
+
+			// remoe -mwasm32 ?
+			LINKER_ARG = '-mwasm32 --export-all --no-entry --allow-undefined';
+
+			break;
+
 		case EMCC_X64:
 
 			LINKER_ARG =
@@ -705,12 +723,6 @@ class Make
 				'-s DISABLE_EXCEPTION_CATCHING=1',
 				'-s USE_WEBGPU=1',
 			].join(' ');
-
-			break;
-
-		case LLVM_WASM_X64:
-
-			LINKER_ARG = '-mwasm32 --export-all --no-entry';
 
 			break;
 
@@ -741,6 +753,28 @@ class Make
 
 			break;
 
+		case CLANG_WASM_X64:
+			{
+				switch (process.platform)
+				{
+				case 'linux':
+
+					MAKE_TOOL = 'make';
+
+					break;
+
+				case 'win32':
+
+					MAKE_TOOL = 'nmake';
+
+					break;
+
+				default:
+				}
+
+				break;
+			}
+
 		case EMCC_X64:
 		{
 			switch (process.platform)
@@ -754,28 +788,6 @@ class Make
 			case 'win32':
 
 				MAKE_TOOL = 'emmake nmake';
-
-				break;
-
-			default:
-			}
-
-			break;
-		}
-
-		case LLVM_WASM_X64:
-		{
-			switch (process.platform)
-			{
-			case 'linux':
-
-				MAKE_TOOL = 'make';
-
-				break;
-
-			case 'win32':
-
-				MAKE_TOOL = 'nmake';
 
 				break;
 
@@ -808,30 +820,30 @@ class Make
 
 			break;
 
-		case EMCC_X64: {
-
-			switch (process.platform)
+		case CLANG_WASM_X64:
 			{
-			case 'linux':
+				switch (process.platform)
+				{
+				case 'linux':
 
-				MAKE_TOOL_MAKEFILE_ARG = '-f';
+					MAKE_TOOL_MAKEFILE_ARG = '-f';
+
+					break;
+
+				case 'win32':
+
+					MAKE_TOOL_MAKEFILE_ARG = '/F';
+
+					break;
+
+				default:
+				}
 
 				break;
-
-			case 'win32':
-
-				MAKE_TOOL_MAKEFILE_ARG = '/F';
-
-				break;
-
-			default:
 			}
 
-			break;
-		}
+		case EMCC_X64: {
 
-		case LLVM_WASM_X64:
-		{
 			switch (process.platform)
 			{
 			case 'linux':
@@ -873,13 +885,13 @@ class Make
 
 			break;
 
-		case EMCC_X64:
+		case CLANG_WASM_X64:
 
 			MAKE_TOOL_ARG = '';
 
 			break;
 
-		case LLVM_WASM_X64:
+		case EMCC_X64:
 
 			MAKE_TOOL_ARG = '';
 
@@ -957,16 +969,16 @@ class Make
 			break;
 		}
 
-		case EMCC_X64:
+		case CLANG_WASM_X64:
 		{
-			// emcc object file to (?) assembly
+			// clang object file to clang assembly
 
 			break;
 		}
 
-		case LLVM_WASM_X64:
+		case EMCC_X64:
 		{
-			// clang object file to llvm assembly
+			// emcc object file to (?) assembly
 
 			break;
 		}
@@ -1015,6 +1027,15 @@ class Make
 			break;
 		}
 
+		case CLANG_WASM_X64:
+		{
+			output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
+
+			// output += ` && wasm-decompile $(BUILD)/output/${ this.a }/${ entry.name }.${ this.a } -o $(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
+
+			break;
+		}
+
 		case MSVS_X64:
 		{
 			output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
@@ -1027,15 +1048,6 @@ class Make
 		case EMCC_X64:
 		{
 			output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
-
-			break;
-		}
-
-		case LLVM_WASM_X64:
-		{
-			output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
-
-			output += ` && wasm-decompile $(BUILD)/output/${ this.a }/${ entry.name }.${ this.a } -o $(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
 
 			break;
 		}
@@ -1076,18 +1088,18 @@ class Make
 			break;
 		}
 
-		case EMCC_X64:
+		case CLANG_WASM_X64:
 		{
 			output += `${ this.LINKER } ${ entry.watch_files2.join(' ') } ${ this.LINKER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin }`;
+
+			// output += ` && wasm-decompile $(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin } -o $(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
 
 			break;
 		}
 
-		case LLVM_WASM_X64:
+		case EMCC_X64:
 		{
 			output += `${ this.LINKER } ${ entry.watch_files2.join(' ') } ${ this.LINKER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin }`;
-
-			output += ` && wasm-decompile $(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin } -o $(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
 
 			break;
 		}

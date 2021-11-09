@@ -568,16 +568,16 @@ class Make
 
 			break;
 
-		case EMCC_X64:
-
-			CPP_COMPILER_ARG = '-c -std=c++20 -O3 -msimd128 -msse -Wall -Wextra -Wpedantic -v';
-
-			break;
-
 		case CLANG_WASM_X64:
 
 			// CHANGE TO WASM64 ?
-			CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm32-unknown-unknown ---no-standard-libraries O3 -msimd128 -Wall -Wextra -Wpedantic -v -I /usr/include/c++/10 -I /usr/include -I /usr/include/x86_64-linux-gnu -I /usr/include/x86_64-linux-gnu/c++/10';
+			CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm32-unknown-unknown --no-standard-libraries -O3 -msimd128 -Wall -Wextra -Wpedantic -v -I /usr/include/c++/10 -I /usr/include -I /usr/include/x86_64-linux-gnu -I /usr/include/x86_64-linux-gnu/c++/10';
+
+			break;
+
+		case EMCC_X64:
+
+			CPP_COMPILER_ARG = '-c -std=c++20 -O3 -msimd128 -msse -Wall -Wextra -Wpedantic -v';
 
 			break;
 
@@ -635,7 +635,7 @@ class Make
 		case CLANG_WASM_X64:
 		case EMCC_X64:
 
-			BUILDER_ARG = '-r -mwasm32 --export-all --no-entry' --allow-undefined;
+			BUILDER_ARG = '-r -mwasm32 --export-all --no-entry --allow-undefined';
 
 			break;
 

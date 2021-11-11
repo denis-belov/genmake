@@ -27,9 +27,7 @@
 eslint-disable
 
 max-len,
-max-params,
 max-statements,
-no-lone-blocks,
 */
 
 
@@ -167,11 +165,11 @@ const C_EXT = [ '.c' ];
 
 
 
-// compile constants
 const GCC_X64 = 'gcc-x64';
 const MSVS_X64 = 'msvs-x64';
-const EMCC_X64 = 'emcc-x64';
-const CLANG_WASM_X64 = 'clang-wasm-x64';
+const CLANG_WASM32 = 'clang-wasm32';
+const CLANG_WASM64 = 'clang-wasm64';
+// const EMCC_X64 = 'emcc-x64';
 
 
 
@@ -193,18 +191,21 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-		case CLANG_WASM_X64:
-		case EMCC_X64:
-
+		case CLANG_WASM32:
+		case CLANG_WASM64:
+		// case EMCC_X64:
+		{
 			INC = '-I ';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			INC = '/I';
 
 			break;
+		}
 
 		default:
 		}
@@ -220,18 +221,21 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-		case CLANG_WASM_X64:
-		case EMCC_X64:
-
+		case CLANG_WASM32:
+		case CLANG_WASM64:
+		// case EMCC_X64:
+		{
 			OUT_OBJ = '-o ';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			OUT_OBJ = '/Fo';
 
 			break;
+		}
 
 		default:
 		}
@@ -247,18 +251,21 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-		case CLANG_WASM_X64:
-		case EMCC_X64:
-
+		case CLANG_WASM32:
+		case CLANG_WASM64:
+		// case EMCC_X64:
+		{
 			OUT_BIN = '-o ';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			OUT_BIN = '/OUT:';
 
 			break;
+		}
 
 		default:
 		}
@@ -276,23 +283,27 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			a = 'a';
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
-		case EMCC_X64:
-
+		case CLANG_WASM32:
+		case CLANG_WASM64:
+		// case EMCC_X64:
+		{
 			a = 'o';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			a = 'lib';
 
 			break;
+		}
 
 		default:
 		}
@@ -308,18 +319,21 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-		case CLANG_WASM_X64:
-		case EMCC_X64:
-
+		case CLANG_WASM32:
+		case CLANG_WASM64:
+		// case EMCC_X64:
+		{
 			o = 'o';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			o = 'obj';
 
 			break;
+		}
 
 		default:
 		}
@@ -335,19 +349,22 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			s = 's';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			s = 'asm';
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
-
+		case CLANG_WASM32:
+		case CLANG_WASM64:
+		{
 			// wasm2wat
 			// s = 'wat';
 
@@ -355,10 +372,11 @@ class Make
 			s = 'dcmp';
 
 			break;
+		}
 
-		case EMCC_X64:
+		// case EMCC_X64:
 
-			break;
+		// 	break;
 
 		default:
 		}
@@ -374,28 +392,32 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			bin = 'bin';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			bin = 'exe';
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
-
+		case CLANG_WASM32:
+		case CLANG_WASM64:
+		{
 			bin = 'wasm';
 
 			break;
+		}
 
-		case EMCC_X64:
+		// case EMCC_X64:
 
-			bin = 'js';
+		// 	bin = 'js';
 
-			break;
+		// 	break;
 
 		default:
 		}
@@ -411,18 +433,20 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			// GAS
 			ASSEMBLER = 'gcc';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			// MASM
 			ASSEMBLER = 'ml64';
 
 			break;
+		}
 
 		default:
 		}
@@ -432,16 +456,18 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			ASSEMBLER_ARG = '-c';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			ASSEMBLER_ARG = '/c';
 
 			break;
+		}
 
 		default:
 		}
@@ -455,28 +481,32 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			C_COMPILER = 'gcc';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			C_COMPILER = 'cl';
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
-
+		case CLANG_WASM32:
+		case CLANG_WASM64:
+		{
 			C_COMPILER = 'clang-12';
 
 			break;
+		}
 
-		case EMCC_X64:
+		// case EMCC_X64:
 
-			C_COMPILER = 'emcc';
+		// 	C_COMPILER = 'emcc';
 
-			break;
+		// 	break;
 
 		default:
 		}
@@ -488,29 +518,39 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			C_COMPILER_ARG = '-c -m64 -msse3 -Ofast -funroll-loops -Wall -Wextra -Wpedantic -v';
 
 			break;
+		}
 
 		case MSVS_X64:
+		{
 
 			C_COMPILER_ARG = '/c /EHsc /MP999 /O2';
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
-
-			// C_COMPILER_ARG = '-c --target=wasm32 --no-standard-libraries -Wall -Wextra -Wpedantic';
-			C_COMPILER_ARG = '-c --target=wasm32 --no-standard-libraries -Wall -Wextra -Wpedantic -v';
-
-			break;
-
-		case EMCC_X64:
-
-			C_COMPILER_ARG = '-c -O3 -msimd128 -msse -Wall -Wextra -Wpedantic -v';
+		case CLANG_WASM32:
+		{
+			C_COMPILER_ARG = '-c --target=wasm32-unknown-unknown-wasm --no-standard-libraries -O3 -msimd128 -Wall -Wextra -Wpedantic -v';
 
 			break;
+		}
+
+		case CLANG_WASM64:
+		{
+			C_COMPILER_ARG = '-c --target=wasm64-unknown-unknown-wasm --no-standard-libraries -O3 -msimd128 -Wall -Wextra -Wpedantic -v';
+
+			break;
+		}
+
+		// case EMCC_X64:
+
+		// 	C_COMPILER_ARG = '-c -O3 -msimd128 -msse -Wall -Wextra -Wpedantic -v';
+
+		// 	break;
 
 		default:
 		}
@@ -524,28 +564,32 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			CPP_COMPILER = 'g++';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			CPP_COMPILER = 'cl';
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
-
+		case CLANG_WASM32:
+		case CLANG_WASM64:
+		{
 			CPP_COMPILER = 'clang++-12';
 
 			break;
+		}
 
-		case EMCC_X64:
+		// case EMCC_X64:
 
-			CPP_COMPILER = 'emcc';
+		// 	CPP_COMPILER = 'emcc';
 
-			break;
+		// 	break;
 
 		default:
 		}
@@ -557,29 +601,39 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			CPP_COMPILER_ARG = '-c -std=c++20 -m64 -msse3 -Ofast -funroll-loops -Wall -Wextra -Wpedantic -Wno-cpp -v';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			CPP_COMPILER_ARG = '/c /std:c++20 /EHsc /MP999 /O2';
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
-
-			// CHANGE TO WASM64 ?
-			CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm32-unknown-unknown --no-standard-libraries -O3 -msimd128 -Wall -Wextra -Wpedantic -v -I /usr/include/c++/10 -I /usr/include -I /usr/include/x86_64-linux-gnu -I /usr/include/x86_64-linux-gnu/c++/10';
-
-			break;
-
-		case EMCC_X64:
-
-			CPP_COMPILER_ARG = '-c -std=c++20 -O3 -msimd128 -msse -Wall -Wextra -Wpedantic -v';
+		case CLANG_WASM32:
+		{
+			CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm32-unknown-unknown-wasm --no-standard-libraries -O3 -msimd128 -Wall -Wextra -Wpedantic -v -I /usr/include/c++/10 -I /usr/include -I /usr/include/x86_64-linux-gnu -I /usr/include/x86_64-linux-gnu/c++/10';
 
 			break;
+		}
+
+		case CLANG_WASM64:
+		{
+			// O3 optimization is buggy ?
+			CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm64-unknown-unknown-wasm --no-standard-libraries -msimd128 -Wall -Wextra -Wpedantic -v -I /usr/include/c++/10 -I /usr/include -I /usr/include/x86_64-linux-gnu -I /usr/include/x86_64-linux-gnu/c++/10';
+
+			break;
+		}
+
+		// case EMCC_X64:
+
+		// 	CPP_COMPILER_ARG = '-c -std=c++20 -O3 -msimd128 -msse -Wall -Wextra -Wpedantic -v';
+
+		// 	break;
 
 		default:
 		}
@@ -593,23 +647,27 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			BUILDER = 'ld';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			BUILDER = 'lib';
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
-		case EMCC_X64:
-
+		case CLANG_WASM32:
+		case CLANG_WASM64:
+		// case EMCC_X64:
+		{
 			BUILDER = 'wasm-ld-12';
 
 			break;
+		}
 
 		default:
 		}
@@ -621,23 +679,34 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			BUILDER_ARG = '-r -flto';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			BUILDER_ARG = '';
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
-		case EMCC_X64:
-
+		case CLANG_WASM32:
+		// case EMCC_X64:
+		{
 			BUILDER_ARG = '-r -mwasm32 --export-all --no-entry --allow-undefined';
 
 			break;
+		}
+
+		case CLANG_WASM64:
+		// case EMCC_X64:
+		{
+			BUILDER_ARG = '-r -mwasm64 --export-all --no-entry --allow-undefined';
+
+			break;
+		}
 
 		default:
 		}
@@ -651,28 +720,32 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			LINKER = 'g++';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			LINKER = 'link';
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
-
+		case CLANG_WASM32:
+		case CLANG_WASM64:
+		{
 			LINKER = 'wasm-ld-12';
 
 			break;
+		}
 
-		case EMCC_X64:
+		// case EMCC_X64:
 
-			LINKER = 'emcc';
+		// 	LINKER = 'emcc';
 
-			break;
+		// 	break;
 
 		default:
 		}
@@ -684,13 +757,14 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			LINKER_ARG = '-flto';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			LINKER_ARG =
 			[
 				'/SUBSYSTEM:CONSOLE',
@@ -699,32 +773,40 @@ class Make
 			].join(' ');
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
-
-			// remoe -mwasm32 ?
+		case CLANG_WASM32:
+		{
 			LINKER_ARG = '-mwasm32 --export-all --no-entry --allow-undefined';
 
 			break;
+		}
 
-		case EMCC_X64:
-
-			LINKER_ARG =
-			[
-				'--bind',
-				'-s WASM=1',
-				'-s SINGLE_FILE=1',
-				'-s MODULARIZE=1',
-				'-s EXPORT_ES6=1',
-				'-s USE_ES6_IMPORT_META=0',
-				'-s ENVIRONMENT=web',
-				'-s EXPORTED_RUNTIME_METHODS=\'["ccall", "cwrap"]\'',
-				'-s ASSERTIONS=0',
-				'-s DISABLE_EXCEPTION_CATCHING=1',
-				'-s USE_WEBGPU=1',
-			].join(' ');
+		case CLANG_WASM64:
+		{
+			LINKER_ARG = '-mwasm64 --export-all --no-entry --allow-undefined';
 
 			break;
+		}
+
+		// case EMCC_X64:
+
+		// 	LINKER_ARG =
+		// 	[
+		// 		'--bind',
+		// 		'-s WASM=1',
+		// 		'-s SINGLE_FILE=1',
+		// 		'-s MODULARIZE=1',
+		// 		'-s EXPORT_ES6=1',
+		// 		'-s USE_ES6_IMPORT_META=0',
+		// 		'-s ENVIRONMENT=web',
+		// 		'-s EXPORTED_RUNTIME_METHODS=\'["ccall", "cwrap"]\'',
+		// 		'-s ASSERTIONS=0',
+		// 		'-s DISABLE_EXCEPTION_CATCHING=1',
+		// 		'-s USE_WEBGPU=1',
+		// 	].join(' ');
+
+		// 	break;
 
 		default:
 		}
@@ -742,60 +824,67 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			MAKE_TOOL = 'make';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			MAKE_TOOL = 'nmake';
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
-			{
-				switch (process.platform)
-				{
-				case 'linux':
-
-					MAKE_TOOL = 'make';
-
-					break;
-
-				case 'win32':
-
-					MAKE_TOOL = 'nmake';
-
-					break;
-
-				default:
-				}
-
-				break;
-			}
-
-		case EMCC_X64:
+		case CLANG_WASM32:
+		case CLANG_WASM64:
 		{
 			switch (process.platform)
 			{
 			case 'linux':
-
-				MAKE_TOOL = 'emmake make';
+			{
+				MAKE_TOOL = 'make';
 
 				break;
+			}
 
 			case 'win32':
-
-				MAKE_TOOL = 'emmake nmake';
+			{
+				MAKE_TOOL = 'nmake';
 
 				break;
+			}
 
 			default:
 			}
 
 			break;
 		}
+
+		// case EMCC_X64:
+		// {
+		// 	switch (process.platform)
+		// 	{
+		// 	case 'linux':
+		// 	{
+		// 		MAKE_TOOL = 'emmake make';
+
+		// 		break;
+		// 	}
+
+		// 	case 'win32':
+		// 	{
+		// 		MAKE_TOOL = 'emmake nmake';
+
+		// 		break;
+		// 	}
+
+		// 	default:
+		// 	}
+
+		// 	break;
+		// }
 
 		default:
 		}
@@ -809,60 +898,65 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			MAKE_TOOL_MAKEFILE_ARG = '-f';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			MAKE_TOOL_MAKEFILE_ARG = '/F';
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
+		case CLANG_WASM32:
+		case CLANG_WASM64:
+		{
+			switch (process.platform)
 			{
-				switch (process.platform)
-				{
-				case 'linux':
-
-					MAKE_TOOL_MAKEFILE_ARG = '-f';
-
-					break;
-
-				case 'win32':
-
-					MAKE_TOOL_MAKEFILE_ARG = '/F';
-
-					break;
-
-				default:
-				}
+			case 'linux':
+			{
+				MAKE_TOOL_MAKEFILE_ARG = '-f';
 
 				break;
 			}
 
-		case EMCC_X64: {
-
-			switch (process.platform)
-			{
-			case 'linux':
-
-				MAKE_TOOL_MAKEFILE_ARG = '-f';
-
-				break;
-
 			case 'win32':
-
+			{
 				MAKE_TOOL_MAKEFILE_ARG = '/F';
 
 				break;
+			}
 
 			default:
 			}
 
 			break;
 		}
+
+		// case EMCC_X64: {
+
+		// 	switch (process.platform)
+		// 	{
+		// 	case 'linux':
+
+		// 		MAKE_TOOL_MAKEFILE_ARG = '-f';
+
+		// 		break;
+
+		// 	case 'win32':
+
+		// 		MAKE_TOOL_MAKEFILE_ARG = '/F';
+
+		// 		break;
+
+		// 	default:
+		// 	}
+
+		// 	break;
+		// }
 
 		default:
 		}
@@ -874,28 +968,32 @@ class Make
 		switch (this.env)
 		{
 		case GCC_X64:
-
+		{
 			MAKE_TOOL_ARG = '';
 
 			break;
+		}
 
 		case MSVS_X64:
-
+		{
 			MAKE_TOOL_ARG = '';
 
 			break;
+		}
 
-		case CLANG_WASM_X64:
-
+		case CLANG_WASM32:
+		case CLANG_WASM64:
+		{
 			MAKE_TOOL_ARG = '';
 
 			break;
+		}
 
-		case EMCC_X64:
+		// case EMCC_X64:
 
-			MAKE_TOOL_ARG = '';
+		// 	MAKE_TOOL_ARG = '';
 
-			break;
+		// 	break;
 
 		default:
 		}
@@ -911,13 +1009,14 @@ class Make
 		switch (process.platform)
 		{
 		case 'linux':
-
+		{
 			mkdir = (dir) => `mkdir -p ${ dir }`;
 
 			break;
+		}
 
 		case 'win32':
-
+		{
 			mkdir = (dir) => `(IF NOT EXIST ${ dir } mkdir ${ dir })`;
 
 			break;
@@ -930,6 +1029,7 @@ class Make
 
 			// 	return `(IF NOT EXIST ${ _dir } mkdir ${ _dir })`;
 			// }).join(' && ');
+		}
 
 		default:
 		}
@@ -969,19 +1069,20 @@ class Make
 			break;
 		}
 
-		case CLANG_WASM_X64:
+		case CLANG_WASM32:
+		case CLANG_WASM64:
 		{
 			// clang object file to clang assembly
 
 			break;
 		}
 
-		case EMCC_X64:
-		{
-			// emcc object file to (?) assembly
+		// case EMCC_X64:
+		// {
+		// 	// emcc object file to (?) assembly
 
-			break;
-		}
+		// 	break;
+		// }
 
 		default:
 		}
@@ -1027,7 +1128,8 @@ class Make
 			break;
 		}
 
-		case CLANG_WASM_X64:
+		case CLANG_WASM32:
+		case CLANG_WASM64:
 		{
 			output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
 
@@ -1045,12 +1147,12 @@ class Make
 			break;
 		}
 
-		case EMCC_X64:
-		{
-			output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
+		// case EMCC_X64:
+		// {
+		// 	output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
 
-			break;
-		}
+		// 	break;
+		// }
 
 		default:
 		}
@@ -1088,7 +1190,8 @@ class Make
 			break;
 		}
 
-		case CLANG_WASM_X64:
+		case CLANG_WASM32:
+		case CLANG_WASM64:
 		{
 			output += `${ this.LINKER } ${ entry.watch_files2.join(' ') } ${ this.LINKER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin }`;
 
@@ -1097,12 +1200,12 @@ class Make
 			break;
 		}
 
-		case EMCC_X64:
-		{
-			output += `${ this.LINKER } ${ entry.watch_files2.join(' ') } ${ this.LINKER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin }`;
+		// case EMCC_X64:
+		// {
+		// 	output += `${ this.LINKER } ${ entry.watch_files2.join(' ') } ${ this.LINKER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin }`;
 
-			break;
-		}
+		// 	break;
+		// }
 
 		default:
 		}

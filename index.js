@@ -16,8 +16,9 @@
 
 // _TODO: use with update-alternatives
 // CLANG SETUP
-// sudo apt install libc6-dev-i386 // x32 standard library headers
-// sudo apt install libstdc++-10-dev // standard library headers
+// sudo apt install libc6-dev-i386 // vcc x32 standard library headers
+// sudo apt install libstdc++-10-dev // gcc standard library headers
+// sudo apt install libc++-10-dev // clang standard library headers
 // sudo apt install clang-12 // bin: clang-12, clang++-12
 // sudo apt install lld-12 // bin: wasm-ld-12
 
@@ -39,6 +40,8 @@ max-statements,
 const path = require('path');
 const fs = require('fs');
 const child_process = require('child_process');
+
+const CONFIG = require('./config');
 
 
 
@@ -169,7 +172,6 @@ const GCC_X64 = 'gcc-x64';
 const MSVS_X64 = 'msvs-x64';
 const CLANG_WASM32 = 'clang-wasm32';
 const CLANG_WASM64 = 'clang-wasm64';
-// const EMCC_X64 = 'emcc-x64';
 
 
 
@@ -193,7 +195,6 @@ class Make
 		case GCC_X64:
 		case CLANG_WASM32:
 		case CLANG_WASM64:
-		// case EMCC_X64:
 		{
 			INC = '-I ';
 
@@ -216,23 +217,22 @@ class Make
 
 		// output object
 
-		let OUT_OBJ = null;
+		let PREF_OUT_OBJ = null;
 
 		switch (this.env)
 		{
 		case GCC_X64:
 		case CLANG_WASM32:
 		case CLANG_WASM64:
-		// case EMCC_X64:
 		{
-			OUT_OBJ = '-o ';
+			PREF_OUT_OBJ = '-o ';
 
 			break;
 		}
 
 		case MSVS_X64:
 		{
-			OUT_OBJ = '/Fo';
+			PREF_OUT_OBJ = '/Fo';
 
 			break;
 		}
@@ -240,29 +240,28 @@ class Make
 		default:
 		}
 
-		this.OUT_OBJ = OUT_OBJ;
+		this.PREF_OUT_OBJ = PREF_OUT_OBJ;
 
 
 
 		// output binary
 
-		let OUT_BIN = null;
+		let PREF_OUT_BIN = null;
 
 		switch (this.env)
 		{
 		case GCC_X64:
 		case CLANG_WASM32:
 		case CLANG_WASM64:
-		// case EMCC_X64:
 		{
-			OUT_BIN = '-o ';
+			PREF_OUT_BIN = '-o ';
 
 			break;
 		}
 
 		case MSVS_X64:
 		{
-			OUT_BIN = '/OUT:';
+			PREF_OUT_BIN = '/OUT:';
 
 			break;
 		}
@@ -270,7 +269,7 @@ class Make
 		default:
 		}
 
-		this.OUT_BIN = OUT_BIN;
+		this.PREF_OUT_BIN = PREF_OUT_BIN;
 
 
 
@@ -291,7 +290,6 @@ class Make
 
 		case CLANG_WASM32:
 		case CLANG_WASM64:
-		// case EMCC_X64:
 		{
 			a = 'o';
 
@@ -321,7 +319,6 @@ class Make
 		case GCC_X64:
 		case CLANG_WASM32:
 		case CLANG_WASM64:
-		// case EMCC_X64:
 		{
 			o = 'o';
 
@@ -374,10 +371,6 @@ class Make
 			break;
 		}
 
-		// case EMCC_X64:
-
-		// 	break;
-
 		default:
 		}
 
@@ -412,12 +405,6 @@ class Make
 
 			break;
 		}
-
-		// case EMCC_X64:
-
-		// 	bin = 'js';
-
-		// 	break;
 
 		default:
 		}
@@ -502,12 +489,6 @@ class Make
 			break;
 		}
 
-		// case EMCC_X64:
-
-		// 	C_COMPILER = 'emcc';
-
-		// 	break;
-
 		default:
 		}
 
@@ -546,12 +527,6 @@ class Make
 			break;
 		}
 
-		// case EMCC_X64:
-
-		// 	C_COMPILER_ARG = '-c -O3 -msimd128 -msse -Wall -Wextra -Wpedantic -v';
-
-		// 	break;
-
 		default:
 		}
 
@@ -585,12 +560,6 @@ class Make
 			break;
 		}
 
-		// case EMCC_X64:
-
-		// 	CPP_COMPILER = 'emcc';
-
-		// 	break;
-
 		default:
 		}
 
@@ -616,7 +585,8 @@ class Make
 
 		case CLANG_WASM32:
 		{
-			CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm32-unknown-unknown-wasm --no-standard-libraries -O3 -msimd128 -Wall -Wextra -Wpedantic -v -I /usr/include/c++/10 -I /usr/include -I /usr/include/x86_64-linux-gnu -I /usr/include/x86_64-linux-gnu/c++/10';
+			// CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm32-unknown-unknown-wasm -O3 -msimd128 -Wall -Wextra -Wpedantic -v -I /usr/include/c++/10 -I /usr/include -I /usr/include/x86_64-linux-gnu -I /usr/include/x86_64-linux-gnu/c++/10';
+			CPP_COMPILER_ARG = '-c -std=c++20 --target=wasm32-unknown-unknown-wasm -O3 -msimd128 -Wall -Wextra -Wpedantic -v -I /home/denis/lib/wasi-sdk-12.0/share/wasi-sysroot/include -I /home/denis/lib/wasi-sdk-12.0/share/wasi-sysroot/include/c++/v1';
 
 			break;
 		}
@@ -628,12 +598,6 @@ class Make
 
 			break;
 		}
-
-		// case EMCC_X64:
-
-		// 	CPP_COMPILER_ARG = '-c -std=c++20 -O3 -msimd128 -msse -Wall -Wextra -Wpedantic -v';
-
-		// 	break;
 
 		default:
 		}
@@ -662,7 +626,6 @@ class Make
 
 		case CLANG_WASM32:
 		case CLANG_WASM64:
-		// case EMCC_X64:
 		{
 			BUILDER = 'wasm-ld-12';
 
@@ -693,7 +656,6 @@ class Make
 		}
 
 		case CLANG_WASM32:
-		// case EMCC_X64:
 		{
 			BUILDER_ARG = '-r -mwasm32 --export-all --no-entry --allow-undefined';
 
@@ -701,7 +663,6 @@ class Make
 		}
 
 		case CLANG_WASM64:
-		// case EMCC_X64:
 		{
 			BUILDER_ARG = '-r -mwasm64 --export-all --no-entry --allow-undefined';
 
@@ -741,12 +702,6 @@ class Make
 			break;
 		}
 
-		// case EMCC_X64:
-
-		// 	LINKER = 'emcc';
-
-		// 	break;
-
 		default:
 		}
 
@@ -777,36 +732,18 @@ class Make
 
 		case CLANG_WASM32:
 		{
-			LINKER_ARG = '-mwasm32 --export-all --no-entry --allow-undefined';
+			// LINKER_ARG = '-mwasm32 --export-all --no-entry --allow-undefined -L /usr/lib/gcc/x86_64-linux-gnu/10 -lstdc++';
+			LINKER_ARG = '-mwasm32 -error-limit=0 --export-all --no-entry- L /home/denis/lib -lc';
 
 			break;
 		}
 
 		case CLANG_WASM64:
 		{
-			LINKER_ARG = '-mwasm64 --export-all --no-entry --allow-undefined';
+			LINKER_ARG = '-mwasm64 -error-limit=0 --export-all --no-entry --allow-undefined';
 
 			break;
 		}
-
-		// case EMCC_X64:
-
-		// 	LINKER_ARG =
-		// 	[
-		// 		'--bind',
-		// 		'-s WASM=1',
-		// 		'-s SINGLE_FILE=1',
-		// 		'-s MODULARIZE=1',
-		// 		'-s EXPORT_ES6=1',
-		// 		'-s USE_ES6_IMPORT_META=0',
-		// 		'-s ENVIRONMENT=web',
-		// 		'-s EXPORTED_RUNTIME_METHODS=\'["ccall", "cwrap"]\'',
-		// 		'-s ASSERTIONS=0',
-		// 		'-s DISABLE_EXCEPTION_CATCHING=1',
-		// 		'-s USE_WEBGPU=1',
-		// 	].join(' ');
-
-		// 	break;
 
 		default:
 		}
@@ -862,30 +799,6 @@ class Make
 			break;
 		}
 
-		// case EMCC_X64:
-		// {
-		// 	switch (process.platform)
-		// 	{
-		// 	case 'linux':
-		// 	{
-		// 		MAKE_TOOL = 'emmake make';
-
-		// 		break;
-		// 	}
-
-		// 	case 'win32':
-		// 	{
-		// 		MAKE_TOOL = 'emmake nmake';
-
-		// 		break;
-		// 	}
-
-		// 	default:
-		// 	}
-
-		// 	break;
-		// }
-
 		default:
 		}
 
@@ -936,28 +849,6 @@ class Make
 			break;
 		}
 
-		// case EMCC_X64: {
-
-		// 	switch (process.platform)
-		// 	{
-		// 	case 'linux':
-
-		// 		MAKE_TOOL_MAKEFILE_ARG = '-f';
-
-		// 		break;
-
-		// 	case 'win32':
-
-		// 		MAKE_TOOL_MAKEFILE_ARG = '/F';
-
-		// 		break;
-
-		// 	default:
-		// 	}
-
-		// 	break;
-		// }
-
 		default:
 		}
 
@@ -988,12 +879,6 @@ class Make
 
 			break;
 		}
-
-		// case EMCC_X64:
-
-		// 	MAKE_TOOL_ARG = '';
-
-		// 	break;
 
 		default:
 		}
@@ -1041,30 +926,71 @@ class Make
 
 	// make includes overriding possibility
 	// make specific compiler arguments and arguments overriding possibility
+	// cpp (entry, head_entry, location)
+	// {
+	// 	const { dir, ext } = path.parse(entry.file);
+
+	// 	let output = '';
+
+	// 	output += `$(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o } : ${ entry.file } ${ entry.watch_files.map((_item) => _item.file || _item).join(' ') } ${ entry.watch_directories }\n`;
+
+	// 	output += `\t${ this.mkdir(`$(BUILD)/${ location }/${ this.o }/${ dir }`) } && ${ this.mkdir(`$(BUILD)/${ location }/${ this.s }/${ dir }`) } && `;
+
+	// 	output += `${ C_EXT.includes(ext) ? this.C_COMPILER : this.CPP_COMPILER } ${ entry.file } ${ C_EXT.includes(ext) ? this.C_COMPILER_ARG : `${ this.CPP_COMPILER_ARG }` } ${ head_entry.flags_additional } ${ entry.flags_additional } ${ head_entry.include_directories.map((include) => `${ this.INC }${ include }`).join(' ') } ${ entry.include_directories.map((include) => `${ this.INC }${ include }`).join(' ') } ${ this.PREF_OUT_OBJ }$(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o }`;
+
+	// 	switch (this.env)
+	// 	{
+	// 	case GCC_X64:
+	// 	{
+	// 		output += ` && objdump -d -M intel -S $(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o } > $(BUILD)/${ location }/${ this.s }/${ entry.file }.${ this.o }.${ this.s }`;
+
+	// 		break;
+	// 	}
+
+	// 	case MSVS_X64:
+	// 	{
+	// 		output += ` /FA /Fa$(BUILD)/${ location }/${ this.s }/${ entry.file }.${ this.o }.${ this.s }`;
+
+	// 		break;
+	// 	}
+
+	// 	case CLANG_WASM32:
+	// 	case CLANG_WASM64:
+	// 	{
+	// 		// clang object file to clang assembly
+
+	// 		break;
+	// 	}
+
+	// 	default:
+	// 	}
+
+	// 	return output;
+	// }
 	cpp (entry, head_entry, location)
 	{
 		const { dir, ext } = path.parse(entry.file);
 
 		let output = '';
 
-		output += `$(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o } : ${ entry.file } ${ entry.watch_files.map((_item) => _item.file || _item).join(' ') } ${ entry.watch_directories }\n`;
+		output += `$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ entry.file }.${ CONFIG[this.env].o } : ${ entry.file } ${ entry.watch_files.map((_item) => _item.file || _item).join(' ') } ${ entry.watch_directories }\n`;
 
-		output += `\t${ this.mkdir(`$(BUILD)/${ location }/${ this.o }/${ dir }`) } && ${ this.mkdir(`$(BUILD)/${ location }/${ this.s }/${ dir }`) } && `;
+		output += `\t${ this.mkdir(`$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ dir }`) } && ${ this.mkdir(`$(BUILD)/${ location }/${ CONFIG[this.env].s }/${ dir }`) } && `;
 
-		output += `${ C_EXT.includes(ext) ? this.C_COMPILER : this.CPP_COMPILER } ${ entry.file } ${ C_EXT.includes(ext) ? this.C_COMPILER_ARG : `${ this.CPP_COMPILER_ARG }` } ${ head_entry.flags_additional } ${ entry.flags_additional } ${ head_entry.include_directories.map((include) => `${ this.INC }${ include }`).join(' ') } ${ entry.include_directories.map((include) => `${ this.INC }${ include }`).join(' ') } ${ this.OUT_OBJ }$(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o }`;
+		output += `${ C_EXT.includes(ext) ? CONFIG[this.env].C_COMPILER : CONFIG[this.env].CPP_COMPILER } ${ entry.file } ${ C_EXT.includes(ext) ? CONFIG[this.env].C_COMPILER_ARG : `${ CONFIG[this.env].CPP_COMPILER_ARG }` } ${ head_entry.flags_additional } ${ entry.flags_additional } ${ head_entry.include_directories.map((include) => `${ CONFIG[this.env].INC }${ include }`).join(' ') } ${ entry.include_directories.map((include) => `${ CONFIG[this.env].INC }${ include }`).join(' ') } ${ CONFIG[this.env].PREF_OUT_OBJ }$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ entry.file }.${ CONFIG[this.env].o }`;
 
 		switch (this.env)
 		{
 		case GCC_X64:
 		{
-			output += ` && objdump -d -M intel -S $(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o } > $(BUILD)/${ location }/${ this.s }/${ entry.file }.${ this.o }.${ this.s }`;
+			output += ` && objdump -d -M intel -S $(BUILD)/${ location }/${ CONFIG[this.env].o }/${ entry.file }.${ CONFIG[this.env].o } > $(BUILD)/${ location }/${ CONFIG[this.env].s }/${ entry.file }.${ CONFIG[this.env].o }.${ CONFIG[this.env].s }`;
 
 			break;
 		}
 
 		case MSVS_X64:
 		{
-			output += ` /FA /Fa$(BUILD)/${ location }/${ this.s }/${ entry.file }.${ this.o }.${ this.s }`;
+			output += ` /FA /Fa$(BUILD)/${ location }/${ CONFIG[this.env].s }/${ entry.file }.${ CONFIG[this.env].o }.${ CONFIG[this.env].s }`;
 
 			break;
 		}
@@ -1076,13 +1002,6 @@ class Make
 
 			break;
 		}
-
-		// case EMCC_X64:
-		// {
-		// 	// emcc object file to (?) assembly
-
-		// 	break;
-		// }
 
 		default:
 		}
@@ -1102,7 +1021,7 @@ class Make
 
 		output += `\t${ this.mkdir(`$(BUILD)/${ location }/${ this.o }/${ dir }`) } && `;
 
-		output += `${ this.ASSEMBLER } ${ entry.file } ${ this.ASSEMBLER_ARG } ${ this.OUT_OBJ }$(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o }`;
+		output += `${ this.ASSEMBLER } ${ entry.file } ${ this.ASSEMBLER_ARG } ${ this.PREF_OUT_OBJ }$(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o }`;
 
 		return output;
 	}
@@ -1113,17 +1032,17 @@ class Make
 	{
 		let output = '';
 
-		output += `$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a } : ${ entry.watch_files2.join(' ') }\n`;
+		output += `$(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a } : ${ entry.watch_files2.join(' ') }\n`;
 
-		output += `\t${ this.mkdir(`$(BUILD)/output/${ this.a }`) } && ${ this.mkdir(`$(BUILD)/output/${ this.s }`) } && `;
+		output += `\t${ this.mkdir(`$(BUILD)/output/${ CONFIG[this.env].a }`) } && ${ this.mkdir(`$(BUILD)/output/${ CONFIG[this.env].s }`) } && `;
 
 		switch (this.env)
 		{
 		case GCC_X64:
 		{
-			output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
+			output += `${ CONFIG[this.env].BUILDER } ${ entry.watch_files2.join(' ') } ${ CONFIG[this.env].BUILDER_ARG } ${ CONFIG[this.env].PREF_OUT_BIN }$(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a }`;
 
-			output += ` && objdump -d -M intel -S $(BUILD)/output/${ this.a }/${ entry.name }.${ this.a } > $(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
+			output += ` && objdump -d -M intel -S $(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a } > $(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
 
 			break;
 		}
@@ -1131,7 +1050,7 @@ class Make
 		case CLANG_WASM32:
 		case CLANG_WASM64:
 		{
-			output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
+			output += `${ CONFIG[this.env].BUILDER } ${ entry.watch_files2.join(' ') } ${ CONFIG[this.env].BUILDER_ARG } ${ CONFIG[this.env].PREF_OUT_BIN }$(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a }`;
 
 			// output += ` && wasm-decompile $(BUILD)/output/${ this.a }/${ entry.name }.${ this.a } -o $(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
 
@@ -1140,19 +1059,12 @@ class Make
 
 		case MSVS_X64:
 		{
-			output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
+			output += `${ CONFIG[this.env].BUILDER } ${ entry.watch_files2.join(' ') } ${ CONFIG[this.env].BUILDER_ARG } ${ CONFIG[this.env].PREF_OUT_BIN }$(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a }`;
 
-			output += ` && dumpbin /disasm $(BUILD)/output/${ this.a }/${ entry.name }.${ this.a } /out:$(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
+			output += ` && dumpbin /disasm $(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a } /out:$(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
 
 			break;
 		}
-
-		// case EMCC_X64:
-		// {
-		// 	output += `${ this.BUILDER } ${ entry.watch_files2.join(' ') } ${ this.BUILDER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.a }/${ entry.name }.${ this.a }`;
-
-		// 	break;
-		// }
 
 		default:
 		}
@@ -1166,26 +1078,26 @@ class Make
 	{
 		let output = '';
 
-		output += `$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin } : ${ entry.watch_files2.join(' ') }\n`;
+		output += `$(BUILD)/output/${ CONFIG[this.env].bin }/${ entry.name }.${ CONFIG[this.env].bin } : ${ entry.watch_files2.join(' ') }\n`;
 
-		output += `\t${ this.mkdir(`$(BUILD)/output/${ this.bin }`) } && ${ this.mkdir(`$(BUILD)/output/${ this.s }`) } && `;
+		output += `\t${ this.mkdir(`$(BUILD)/output/${ CONFIG[this.env].bin }`) } && ${ this.mkdir(`$(BUILD)/output/${ CONFIG[this.env].s }`) } && `;
 
 		switch (this.env)
 		{
 		case GCC_X64:
 		{
-			output += `${ this.LINKER } ${ entry.watch_files2.join(' ') } ${ entry.system_libraries.map((lib) => `-l ${ lib }`).join(' ') } ${ this.LINKER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin }`;
+			output += `${ CONFIG[this.env].LINKER } ${ entry.watch_files2.join(' ') } ${ entry.system_libraries.map((lib) => `-l ${ lib }`).join(' ') } ${ CONFIG[this.env].LINKER_ARG } ${ CONFIG[this.env].PREF_OUT_BIN }$(BUILD)/output/${ CONFIG[this.env].bin }/${ entry.name }.${ CONFIG[this.env].bin }`;
 
-			output += ` && objdump -d -M intel -S $(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin } > $(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
+			output += ` && objdump -d -M intel -S $(BUILD)/output/${ CONFIG[this.env].bin }/${ entry.name }.${ CONFIG[this.env].bin } > $(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
 
 			break;
 		}
 
 		case MSVS_X64:
 		{
-			output += `${ this.LINKER } ${ entry.watch_files2.join(' ') } ${ entry.system_libraries.join(' ') } ${ this.LINKER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin }`;
+			output += `${ CONFIG[this.env].LINKER } ${ entry.watch_files2.join(' ') } ${ entry.system_libraries.join(' ') } ${ CONFIG[this.env].LINKER_ARG } ${ CONFIG[this.env].PREF_OUT_BIN }$(BUILD)/output/${ CONFIG[this.env].bin }/${ entry.name }.${ CONFIG[this.env].bin }`;
 
-			output += ` && dumpbin /disasm $(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin } /out:$(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
+			output += ` && dumpbin /disasm $(BUILD)/output/${ CONFIG[this.env].bin }/${ entry.name }.${ CONFIG[this.env].bin } /out:$(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
 
 			break;
 		}
@@ -1193,19 +1105,12 @@ class Make
 		case CLANG_WASM32:
 		case CLANG_WASM64:
 		{
-			output += `${ this.LINKER } ${ entry.watch_files2.join(' ') } ${ this.LINKER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin }`;
+			output += `${ CONFIG[this.env].LINKER } ${ entry.watch_files2.join(' ') } ${ CONFIG[this.env].LINKER_ARG } ${ CONFIG[this.env].PREF_OUT_BIN }$(BUILD)/output/${ CONFIG[this.env].bin }/${ entry.name }.${ CONFIG[this.env].bin }`;
 
-			// output += ` && wasm-decompile $(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin } -o $(BUILD)/output/${ this.s }/${ entry.name }.${ this.s }`;
+			// output += ` && wasm-decompile $(BUILD)/output/${ CONFIG[this.env].bin }/${ entry.name }.${ CONFIG[this.env].bin } -o $(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
 
 			break;
 		}
-
-		// case EMCC_X64:
-		// {
-		// 	output += `${ this.LINKER } ${ entry.watch_files2.join(' ') } ${ this.LINKER_ARG } ${ this.OUT_BIN }$(BUILD)/output/${ this.bin }/${ entry.name }.${ this.bin }`;
-
-		// 	break;
-		// }
 
 		default:
 		}
@@ -1236,6 +1141,7 @@ class Make
 			`ENV=${ this.env }
 SRC=${ this.dirname }/src
 BUILD=${ this.dirname }/build/$(ENV)
+${ CONFIG[this.env].UNIFORM_ARG.join('\n') }
 ${ (options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).map((elm) => `${ elm }=${ options.variables[this.env][elm] }`) : []).join('\n') }`,
 		];
 

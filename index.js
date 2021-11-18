@@ -16,11 +16,17 @@
 
 // _TODO: use with update-alternatives
 // CLANG SETUP
+// Wrong?
 // sudo apt install libc6-dev-i386 // vcc x32 standard library headers
 // sudo apt install libstdc++-10-dev // gcc standard library headers
 // sudo apt install libc++-10-dev // clang standard library headers
+
 // sudo apt install clang-12 // bin: clang-12, clang++-12
 // sudo apt install lld-12 // bin: wasm-ld-12
+// export WASI_VERSION=12
+// export WASI_VERSION_FULL=${WASI_VERSION}.0
+// wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_VERSION}/wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz
+// tar xvf wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz
 
 
 

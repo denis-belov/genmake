@@ -63,7 +63,7 @@ module.exports =
 		CPP_COMPILER: 'clang++-12',
 
 		// CPP_COMPILER_ARG: '--target=wasm32-unknown-unknown-wasi -I /usr/include/c++/10 -I /usr/include -I /usr/include/x86_64-linux-gnu -I /usr/include/x86_64-linux-gnu/c++/10',
-		CPP_COMPILER_ARG: '--target=wasm32-unknown-unknown-wasi -error-limit=0 -fno-exceptions -mthread-model single --sysroot=/home/denis/lib/wasi-sdk-12.0/share/wasi-sysroot -I /home/denis/lib/wasi-sdk-12.0/share/wasi-sysroot/include -I /home/denis/lib/wasi-sdk-12.0/share/wasi-sysroot/include/c++/v1',
+		CPP_COMPILER_ARG: '--target=wasm32-unknown-unknown-wasi -error-limit=0 -fno-exceptions -mthread-model single --sysroot=/home/denis/lib/wasi-sdk-12.0/share/wasi-sysroot',
 
 		BUILDER: 'wasm-ld-12',
 

@@ -86,13 +86,13 @@ module.exports =
 		BUILDER: '/home/denis/lib/wasi-sdk-14.0/bin/wasm-ld',
 		// BUILDER: 'clang++',
 
-		BUILDER_ARG: '-r -mwasm32 -error-limit=0 --export-all --no-entry --allow-undefined',
+		BUILDER_ARG: '-r -mwasm32 -error-limit=0 --export-all --no-entry --allow-undefined --no-check-features',
 		// BUILDER_ARG: '-Wl,-r -Wl,-mwasm32 -Wl,-error-limit=0 -Wl,--export-all -Wl,--no-entry -Wl,--allow-undefined --target=wasm32-unknown-wasi-unknown -error-limit=0 -fno-exceptions -mthread-model single --sysroot=/home/denis/lib/wasi-sdk-14.0/share/wasi-sysroot',
 
 		// LINKER: 'wasm-ld',
 		LINKER: '/home/denis/lib/wasi-sdk-14.0/bin/wasm-ld',
 
-		LINKER_ARG: '-mwasm32 -error-limit=0 --export-all --no-entry --allow-undefined --import-memory --shared-memory --max-memory=131072 -L /home/denis/lib/wasi-sdk-14.0/share/wasi-sysroot/lib/wasm32-wasi -lc -lc++ -lc++abi',
+		LINKER_ARG: '-mwasm32 -error-limit=0 --export-all --no-entry --allow-undefined --no-check-features --import-memory --shared-memory --max-memory=131072 -L /home/denis/lib/wasi-sdk-14.0/share/wasi-sysroot/lib/wasm32-wasi -lc -lc++ -lc++abi',
 		// LINKER_ARG: '-mwasm32 -error-limit=0 --export-all --no-entry -L /lib/llvm-12/lib -lc++',
 	},
 };

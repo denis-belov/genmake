@@ -14,15 +14,19 @@
 // sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
 // sudo apt install ld
 
-// _TODO: use with update-alternatives
 // CLANG SETUP
 // Wrong?
 // sudo apt install libc6-dev-i386 // vcc x32 standard library headers
 // sudo apt install libstdc++-10-dev // gcc standard library headers
 // sudo apt install libc++-10-dev // clang standard library headers
 
-// sudo apt install clang-12 // bin: clang-12, clang++-12
-// sudo apt install lld-12 // bin: wasm-ld-12
+// export CLANG_VERSION=12
+// export LLD_VERSION=12
+// sudo apt install clang-${CLANG_VERSION} // bin: clang, clang++
+// sudo apt install lld-${LLD_VERSION} // bin: wasm-ld
+// sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${CLANG_VERSION} 100
+// sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${CLANG_VERSION} 100
+// sudo update-alternatives --install /usr/bin/wasm-ld wasm-ld /usr/bin/wasm-ld-${LLD_VERSION} 100
 // export WASI_VERSION=12
 // export WASI_VERSION_FULL=${WASI_VERSION}.0
 // wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_VERSION}/wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz
@@ -1199,7 +1203,7 @@ ${ (options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).ma
 							{
 								const location = file.includes('$(SRC)') ? 'internal' : 'external';
 
-								return `$(BUILD)/${ location }/${ this.o }/${ file }.${ this.o }`;
+								return `$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ file }.${ CONFIG[this.env].o }`;
 							}
 
 							return file;
@@ -1269,8 +1273,8 @@ ${ (options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).ma
 		makeArray(options.entries[0]).forEach((entry) => parseEntry(entry, entry));
 
 		statements[0] +=
-			`\nASM_EXT=${ this.s }
-LIB_EXT=${ this.a }`;
+			`\nASM_EXT=${ CONFIG[this.env].s }
+LIB_EXT=${ CONFIG[this.env].a }`;
 
 		const makefiles = `${ this.dirname }/makefiles`;
 

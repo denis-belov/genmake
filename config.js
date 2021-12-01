@@ -19,6 +19,20 @@ module.exports =
 {
 	'clang-wasm32':
 	{
+		/**
+		 * export CLANG_VERSION=12
+		 * export LLD_VERSION=12
+		 * export WASI_VERSION=12
+		 * export WASI_VERSION_FULL=${WASI_VERSION}.0
+		 * sudo apt install clang-${CLANG_VERSION} // clang, clang++
+		 * sudo apt install lld-${LLD_VERSION} // wasm-ld
+		 * sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${CLANG_VERSION} 100
+		 * sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${CLANG_VERSION} 100
+		 * sudo update-alternatives --install /usr/bin/wasm-ld wasm-ld /usr/bin/wasm-ld-${LLD_VERSION} 100
+		 * wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_VERSION}/wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz
+		 * tar xvf wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz
+		 */
+
 		UNIFORM_ARG:
 		[
 			'NO_LINK=-c',
@@ -48,7 +62,8 @@ module.exports =
 
 		PREF_OUT_BIN: '-o ',
 
-		a: 'o',
+		// a: 'o',
+		a: 'a',
 
 		o: 'o',
 
@@ -56,22 +71,28 @@ module.exports =
 
 		bin: 'wasm',
 
-		C_COMPILER: 'clang-12',
+		// C_COMPILER: 'clang',
+		C_COMPILER: '/home/denis/lib/wasi-sdk-14.0/bin/clang',
 
-		C_COMPILER_ARG: '--target=wasm32-unknown-unknown-wasi -error-limit=0 -fno-exceptions --sysroot=/home/denis/lib/wasi-sdk-12.0/share/wasi-sysroot',
+		C_COMPILER_ARG: '--target=wasm32-unknown-wasi-unknown -error-limit=0 -fno-exceptions -mthread-model single --sysroot=/home/denis/lib/wasi-sdk-14.0/share/wasi-sysroot',
 
-		CPP_COMPILER: 'clang++-12',
+		// CPP_COMPILER: 'clang++',
+		CPP_COMPILER: '/home/denis/lib/wasi-sdk-14.0/bin/clang++',
 
-		// CPP_COMPILER_ARG: '--target=wasm32-unknown-unknown-wasi -I /usr/include/c++/10 -I /usr/include -I /usr/include/x86_64-linux-gnu -I /usr/include/x86_64-linux-gnu/c++/10',
-		CPP_COMPILER_ARG: '--target=wasm32-unknown-unknown-wasi -error-limit=0 -fno-exceptions -mthread-model single --sysroot=/home/denis/lib/wasi-sdk-12.0/share/wasi-sysroot',
+		// CPP_COMPILER_ARG: '--target=wasm32-unknown-wasi-unknown -I /usr/include/c++/10 -I /usr/include -I /usr/include/x86_64-linux-gnu -I /usr/include/x86_64-linux-gnu/c++/10',
+		CPP_COMPILER_ARG: '--target=wasm32-unknown-wasi-unknown -error-limit=0 -fno-exceptions -mthread-model single --sysroot=/home/denis/lib/wasi-sdk-14.0/share/wasi-sysroot',
 
-		BUILDER: 'wasm-ld-12',
+		// BUILDER: 'wasm-ld',
+		BUILDER: '/home/denis/lib/wasi-sdk-14.0/bin/wasm-ld',
+		// BUILDER: 'clang++',
 
 		BUILDER_ARG: '-r -mwasm32 -error-limit=0 --export-all --no-entry --allow-undefined',
+		// BUILDER_ARG: '-Wl,-r -Wl,-mwasm32 -Wl,-error-limit=0 -Wl,--export-all -Wl,--no-entry -Wl,--allow-undefined --target=wasm32-unknown-wasi-unknown -error-limit=0 -fno-exceptions -mthread-model single --sysroot=/home/denis/lib/wasi-sdk-14.0/share/wasi-sysroot',
 
-		LINKER: 'wasm-ld-12',
+		// LINKER: 'wasm-ld',
+		LINKER: '/home/denis/lib/wasi-sdk-14.0/bin/wasm-ld',
 
-		LINKER_ARG: '-mwasm32 -error-limit=0 --export-all --no-entry --allow-undefined -L /home/denis/lib/wasi-sdk-12.0/share/wasi-sysroot/lib/wasm32-wasi -lc -lc++ -lc++abi',
+		LINKER_ARG: '-mwasm32 -error-limit=0 --export-all --no-entry --allow-undefined --import-memory --shared-memory --max-memory=131072 -L /home/denis/lib/wasi-sdk-14.0/share/wasi-sysroot/lib/wasm32-wasi -lc -lc++ -lc++abi',
 		// LINKER_ARG: '-mwasm32 -error-limit=0 --export-all --no-entry -L /lib/llvm-12/lib -lc++',
 	},
 };

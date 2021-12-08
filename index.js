@@ -1164,6 +1164,7 @@ ${ (options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).ma
 
 			entry.include_directories = makeArray(entry.include_directories);
 			entry.watch_files = makeArray(entry.watch_files);
+			entry.watch_files3 = makeArray(entry.watch_files3);
 			entry.watch_directories = makeArray(entry.watch_directories);
 
 			entry.watch_directories =
@@ -1259,7 +1260,28 @@ ${ (options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).ma
 
 					let out = '';
 
-					out += `${ entry.file } : ${ entry.watch_files.map((_item) => _item.file || _item).join(' ') } ${ entry.watch_directories }\n`;
+
+					entry.watch_files2 =
+						entry.watch_files.map
+						(
+							(_item) =>
+							{
+								const file = _item.file || _item;
+
+								const _ext = path.parse(file).ext;
+
+								if (_ext === '.c' || _ext === '.cpp' || _ext === '.s' || _ext === '.asm')
+								{
+									const location = file.includes('$(SRC)') ? 'internal' : 'external';
+
+									return `$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ file }.${ CONFIG[this.env].o }`;
+								}
+
+								return file;
+							},
+						);
+
+					out += `${ entry.file } : ${ entry.watch_files2.map((_item) => _item.file || _item).join(' ') } ${ entry.watch_files3.map((_item) => _item.file || _item).join(' ') } ${ entry.watch_directories }\n`;
 
 					out += `\t${ entry.do }`;
 

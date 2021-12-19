@@ -1332,8 +1332,43 @@ LIB_EXT=${ CONFIG[this.env].a }`;
 
 		const proc = child_process.exec(`${ this.MAKE_TOOL } -f ${ makefile }`, { encoding: 'utf8' });
 
-		proc.stdout.on('data', LOG);
-		proc.stderr.on('data', (text) => LOG('\x1b[31m%s\x1b[0m', text));
+		proc.stdout.on
+		(
+			'data',
+
+			(evt) =>
+			{
+				// LOG('\x1b[37m', 'GENMAKE STDOUT:');
+				LOG('\x1b[34m', evt);
+			},
+		);
+
+		proc.stderr.on
+		(
+			'data',
+
+			(evt) =>
+			{
+				// LOG('\x1b[37m', 'GENMAKE STDERR:');
+
+				if (evt.match(/\serror/ig))
+				{
+					return LOG('\x1b[31m', evt);
+				}
+
+				if (evt.match(/\swarning/ig))
+				{
+					return LOG('\x1b[33m', evt);
+				}
+
+				// if (evt.match(/\snote/ig))
+				// {
+				// 	return LOG('\x1b[33m', evt);
+				// }
+
+				LOG('\x1b[34m', evt);
+			},
+		);
 	}
 }
 

@@ -159,6 +159,6 @@ module.exports =
 
 		LINKER: 'g++',
 
-		LINKER_ARG: '-flto',
+		LINKER_ARG: '-flto --verbose',
 	},
 };

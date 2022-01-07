@@ -987,7 +987,7 @@ class Make
 
 		output += `\t${ this.mkdir(`$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ dir }`) } && ${ this.mkdir(`$(BUILD)/${ location }/${ CONFIG[this.env].s }/${ dir }`) } && `;
 
-		output += `${ C_EXT.includes(ext) ? CONFIG[this.env].C_COMPILER : CONFIG[this.env].CPP_COMPILER } ${ entry.file } ${ C_EXT.includes(ext) ? CONFIG[this.env].C_COMPILER_ARG : `${ CONFIG[this.env].CPP_COMPILER_ARG }` } ${ head_entry.flags_additional } ${ entry.flags_additional } ${ head_entry.include_directories.map((include) => `${ CONFIG[this.env].INC }${ include }`).join(' ') } ${ entry.include_directories.map((include) => `${ CONFIG[this.env].INC }${ include }`).join(' ') } ${ CONFIG[this.env].PREF_OUT_OBJ }$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ entry.file }.${ CONFIG[this.env].o }`;
+		output += `${ C_EXT.includes(ext) ? CONFIG[this.env].C_COMPILER : CONFIG[this.env].CPP_COMPILER } ${ entry.file } ${ C_EXT.includes(ext) ? CONFIG[this.env].C_COMPILER_ARG : `${ CONFIG[this.env].CPP_COMPILER_ARG }` } ${ entry.flags_override || `${ head_entry.flags_additional } ${ entry.flags_additional }` } ${ head_entry.include_directories.map((include) => `${ CONFIG[this.env].INC }${ include }`).join(' ') } ${ entry.include_directories.map((include) => `${ CONFIG[this.env].INC }${ include }`).join(' ') } ${ CONFIG[this.env].PREF_OUT_OBJ }$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ entry.file }.${ CONFIG[this.env].o }`;
 
 		switch (this.env)
 		{
@@ -1072,6 +1072,33 @@ class Make
 			output += `${ CONFIG[this.env].BUILDER } ${ entry.watch_files2.join(' ') } ${ CONFIG[this.env].BUILDER_ARG } ${ CONFIG[this.env].PREF_OUT_BIN }$(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a }`;
 
 			output += ` && dumpbin /disasm $(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a } /out:$(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
+
+			break;
+		}
+
+		default:
+		}
+
+		return output;
+	}
+
+
+
+	shared (entry)
+	{
+		let output = '';
+
+		output += `$(BUILD)/output/${ CONFIG[this.env].so }/${ entry.name }.${ CONFIG[this.env].so } : ${ entry.watch_files2.join(' ') }\n`;
+
+		output += `\t${ this.mkdir(`$(BUILD)/output/${ CONFIG[this.env].so }`) } && ${ this.mkdir(`$(BUILD)/output/${ CONFIG[this.env].s }`) } && `;
+
+		switch (this.env)
+		{
+		case GCC_X64:
+		{
+			output += `${ CONFIG[this.env].BUILDER } ${ entry.watch_files2.join(' ') } ${ CONFIG[this.env].BUILDER_ARG_SHARED } ${ CONFIG[this.env].PREF_OUT_BIN }$(BUILD)/output/${ CONFIG[this.env].so }/${ entry.name }.${ CONFIG[this.env].so }`;
+
+			output += ` && objdump -d -M intel -S $(BUILD)/output/${ CONFIG[this.env].so }/${ entry.name }.${ CONFIG[this.env].so } > $(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
 
 			break;
 		}
@@ -1186,7 +1213,7 @@ ${ (options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).ma
 
 			entry.flags_additional = entry.flags_additional || '';
 
-			if (entry.type === 'static' || entry.type === 'bin')
+			if (entry.type === 'static' || entry.type === 'shared' || entry.type === 'bin')
 			{
 				entry.name = entry.name || 'build';
 				entry.system_libraries = makeArray(entry.system_libraries);
@@ -1214,6 +1241,10 @@ ${ (options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).ma
 				if (entry.type === 'static')
 				{
 					statements.push(this.static(entry));
+				}
+				else if (entry.type === 'shared')
+				{
+					statements.push(this.shared(entry));
 				}
 				else if (entry.type === 'bin')
 				{

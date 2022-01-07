@@ -72,6 +72,7 @@ module.exports =
 
 		bin: 'wasm',
 
+		// wasi-sdk clang is set for wasm compilation, but regular clang can also be used with proper flags.
 		// C_COMPILER: 'clang',
 		C_COMPILER: '/home/denis/lib/wasi-sdk-14.0/bin/clang',
 
@@ -139,6 +140,8 @@ module.exports =
 
 		a: 'a',
 
+		so: 'so',
+
 		o: 'o',
 
 		s: 's',
@@ -156,6 +159,8 @@ module.exports =
 		BUILDER: 'ld',
 
 		BUILDER_ARG: '-r -flto',
+
+		BUILDER_ARG_SHARED: '-shared -fPIC -flto',
 
 		LINKER: 'g++',
 

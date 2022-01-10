@@ -16,7 +16,7 @@
 
 // CLANG SETUP
 // Wrong?
-// sudo apt install libc6-dev-i386 // vcc x32 standard library headers
+// sudo apt install libc6-dev-i386 // gcc x32 standard library headers
 // sudo apt install libstdc++-10-dev // gcc standard library headers
 // sudo apt install libc++-10-dev // clang standard library headers
 
@@ -946,7 +946,7 @@ class Make
 
 	// 	output += `\t${ this.mkdir(`$(BUILD)/${ location }/${ this.o }/${ dir }`) } && ${ this.mkdir(`$(BUILD)/${ location }/${ this.s }/${ dir }`) } && `;
 
-	// 	output += `${ C_EXT.includes(ext) ? this.C_COMPILER : this.CPP_COMPILER } ${ entry.file } ${ C_EXT.includes(ext) ? this.C_COMPILER_ARG : `${ this.CPP_COMPILER_ARG }` } ${ head_entry.flags_additional } ${ entry.flags_additional } ${ head_entry.include_directories.map((include) => `${ this.INC }${ include }`).join(' ') } ${ entry.include_directories.map((include) => `${ this.INC }${ include }`).join(' ') } ${ this.PREF_OUT_OBJ }$(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o }`;
+	// 	output += `${ C_EXT.includes(ext) ? this.C_COMPILER : this.CPP_COMPILER } ${ entry.file } ${ C_EXT.includes(ext) ? this.C_COMPILER_ARG : `${ this.CPP_COMPILER_ARG }` } ${ head_entry.flags } ${ entry.flags } ${ head_entry.include_directories.map((include) => `${ this.INC }${ include }`).join(' ') } ${ entry.include_directories.map((include) => `${ this.INC }${ include }`).join(' ') } ${ this.PREF_OUT_OBJ }$(BUILD)/${ location }/${ this.o }/${ entry.file }.${ this.o }`;
 
 	// 	switch (this.env)
 	// 	{
@@ -983,38 +983,58 @@ class Make
 
 		let output = '';
 
+		/**
+		 * [target] : [dependencies]
+		 */
 		output += `$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ entry.file }.${ CONFIG[this.env].o } : ${ entry.file } ${ entry.watch_files.map((_item) => _item.file || _item).join(' ') } ${ entry.watch_directories }\n`;
 
+		/**
+		 * Make output directories
+		 */
 		output += `\t${ this.mkdir(`$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ dir }`) } && ${ this.mkdir(`$(BUILD)/${ location }/${ CONFIG[this.env].s }/${ dir }`) } && `;
 
-		output += `${ C_EXT.includes(ext) ? CONFIG[this.env].C_COMPILER : CONFIG[this.env].CPP_COMPILER } ${ entry.file } ${ C_EXT.includes(ext) ? CONFIG[this.env].C_COMPILER_ARG : `${ CONFIG[this.env].CPP_COMPILER_ARG }` } ${ entry.flags_override || `${ head_entry.flags_additional } ${ entry.flags_additional }` } ${ head_entry.include_directories.map((include) => `${ CONFIG[this.env].INC }${ include }`).join(' ') } ${ entry.include_directories.map((include) => `${ CONFIG[this.env].INC }${ include }`).join(' ') } ${ CONFIG[this.env].PREF_OUT_OBJ }$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ entry.file }.${ CONFIG[this.env].o }`;
+		/**
+		 * [compiler] [compiler required env args]
+		 */
+		output += `${ C_EXT.includes(ext) ? CONFIG[this.env].C_COMPILER : CONFIG[this.env].CPP_COMPILER } ${ entry.file } ${ C_EXT.includes(ext) ? CONFIG[this.env].C_COMPILER_ARG : `${ CONFIG[this.env].CPP_COMPILER_ARG }` } `;
 
-		switch (this.env)
-		{
-		case GCC_X64:
-		{
-			output += ` && objdump -d -M intel -S $(BUILD)/${ location }/${ CONFIG[this.env].o }/${ entry.file }.${ CONFIG[this.env].o } > $(BUILD)/${ location }/${ CONFIG[this.env].s }/${ entry.file }.${ CONFIG[this.env].o }.${ CONFIG[this.env].s }`;
+		/**
+		 * [flags]
+		 */
+		output += `${ entry.flags_override || `${ head_entry.flags } ${ entry.flags }` } `;
 
-			break;
-		}
+		/**
+		 * [include directories]
+		 */
+		output += `${ entry.include_directories_override.length ? entry.include_directories_override.map((include) => `${ CONFIG[this.env].INC }${ include }`).join(' ') : `${ head_entry.include_directories.map((include) => `${ CONFIG[this.env].INC }${ include }`).join(' ') } ${ entry.include_directories.map((include) => `${ CONFIG[this.env].INC }${ include }`).join(' ') }` } `;
 
-		case MSVS_X64:
-		{
-			output += ` /FA /Fa$(BUILD)/${ location }/${ CONFIG[this.env].s }/${ entry.file }.${ CONFIG[this.env].o }.${ CONFIG[this.env].s }`;
+		/**
+		 * [output]
+		 */
+		output += `${ CONFIG[this.env].PREF_OUT_OBJ }$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ entry.file }.${ CONFIG[this.env].o }`;
 
-			break;
-		}
+		// switch (this.env)
+		// {
+		// case GCC_X64:
+		// {
+		// 	output += ` && objdump -d -M intel -S $(BUILD)/${ location }/${ CONFIG[this.env].o }/${ entry.file }.${ CONFIG[this.env].o } > $(BUILD)/${ location }/${ CONFIG[this.env].s }/${ entry.file }.${ CONFIG[this.env].o }.${ CONFIG[this.env].s }`;
 
-		case CLANG_WASM32:
-		case CLANG_WASM64:
-		{
-			// clang object file to clang assembly
+		// 	break;
+		// }
 
-			break;
-		}
+		// case MSVS_X64:
+		// {
+		// 	output += ` /FA /Fa$(BUILD)/${ location }/${ CONFIG[this.env].s }/${ entry.file }.${ CONFIG[this.env].o }.${ CONFIG[this.env].s }`;
 
-		default:
-		}
+		// 	break;
+		// }
+
+		// case CLANG_WASM32:
+		// case CLANG_WASM64:
+		// 	break;
+
+		// default:
+		// }
 
 		return output;
 	}
@@ -1052,7 +1072,7 @@ class Make
 		{
 			output += `${ CONFIG[this.env].BUILDER } ${ entry.watch_files2.join(' ') } ${ CONFIG[this.env].BUILDER_ARG } ${ CONFIG[this.env].PREF_OUT_BIN }$(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a }`;
 
-			output += ` && objdump -d -M intel -S $(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a } > $(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
+			// output += ` && objdump -d -M intel -S $(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a } > $(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
 
 			break;
 		}
@@ -1071,7 +1091,7 @@ class Make
 		{
 			output += `${ CONFIG[this.env].BUILDER } ${ entry.watch_files2.join(' ') } ${ CONFIG[this.env].BUILDER_ARG } ${ CONFIG[this.env].PREF_OUT_BIN }$(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a }`;
 
-			output += ` && dumpbin /disasm $(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a } /out:$(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
+			// output += ` && dumpbin /disasm $(BUILD)/output/${ CONFIG[this.env].a }/${ entry.name }.${ CONFIG[this.env].a } /out:$(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
 
 			break;
 		}
@@ -1098,7 +1118,7 @@ class Make
 		{
 			output += `${ CONFIG[this.env].BUILDER } ${ entry.watch_files2.join(' ') } ${ CONFIG[this.env].BUILDER_ARG_SHARED } ${ CONFIG[this.env].PREF_OUT_BIN }$(BUILD)/output/${ CONFIG[this.env].so }/${ entry.name }.${ CONFIG[this.env].so }`;
 
-			output += ` && objdump -d -M intel -S $(BUILD)/output/${ CONFIG[this.env].so }/${ entry.name }.${ CONFIG[this.env].so } > $(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
+			// output += ` && objdump -d -M intel -S $(BUILD)/output/${ CONFIG[this.env].so }/${ entry.name }.${ CONFIG[this.env].so } > $(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
 
 			break;
 		}
@@ -1125,7 +1145,7 @@ class Make
 		{
 			output += `${ CONFIG[this.env].LINKER } ${ entry.watch_files2.join(' ') } ${ entry.system_libraries.map((lib) => `-l ${ lib }`).join(' ') } ${ CONFIG[this.env].LINKER_ARG } ${ CONFIG[this.env].PREF_OUT_BIN }$(BUILD)/output/${ CONFIG[this.env].bin }/${ entry.name }.${ CONFIG[this.env].bin }`;
 
-			output += ` && objdump -d -M intel -S $(BUILD)/output/${ CONFIG[this.env].bin }/${ entry.name }.${ CONFIG[this.env].bin } > $(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
+			// output += ` && objdump -d -M intel -S $(BUILD)/output/${ CONFIG[this.env].bin }/${ entry.name }.${ CONFIG[this.env].bin } > $(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
 
 			break;
 		}
@@ -1134,7 +1154,7 @@ class Make
 		{
 			output += `${ CONFIG[this.env].LINKER } ${ entry.watch_files2.join(' ') } ${ entry.system_libraries.join(' ') } ${ CONFIG[this.env].LINKER_ARG } ${ CONFIG[this.env].PREF_OUT_BIN }$(BUILD)/output/${ CONFIG[this.env].bin }/${ entry.name }.${ CONFIG[this.env].bin }`;
 
-			output += ` && dumpbin /disasm $(BUILD)/output/${ CONFIG[this.env].bin }/${ entry.name }.${ CONFIG[this.env].bin } /out:$(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
+			// output += ` && dumpbin /disasm $(BUILD)/output/${ CONFIG[this.env].bin }/${ entry.name }.${ CONFIG[this.env].bin } /out:$(BUILD)/output/${ CONFIG[this.env].s }/${ entry.name }.${ CONFIG[this.env].s }`;
 
 			break;
 		}
@@ -1190,6 +1210,9 @@ ${ (options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).ma
 			}
 
 			entry.include_directories = makeArray(entry.include_directories);
+			entry.include_directories_override = makeArray(entry.include_directories_override);
+			entry.flags = entry.flags || '';
+			entry.flags_override = entry.flags_override || null;
 			entry.watch_files = makeArray(entry.watch_files);
 			entry.watch_files3 = makeArray(entry.watch_files3);
 			entry.watch_directories = makeArray(entry.watch_directories);
@@ -1211,32 +1234,54 @@ ${ (options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).ma
 			entry.watch_directories =
 				entry.watch_directories.map((directory) => collectFiles(directory, variables).join(' ')).join(' ');
 
-			entry.flags_additional = entry.flags_additional || '';
-
 			if (entry.type === 'static' || entry.type === 'shared' || entry.type === 'bin')
 			{
 				entry.name = entry.name || 'build';
 				entry.system_libraries = makeArray(entry.system_libraries);
 
 				entry.watch_files2 =
-					entry.watch_files.map
-					(
-						(_item) =>
-						{
-							const file = _item.file || _item;
-
-							const { ext } = path.parse(file);
-
-							if (ext === '.c' || ext === '.cpp' || ext === '.s' || ext === '.asm')
+					entry.watch_files
+						.map
+						(
+							(_item) =>
 							{
-								const location = file.includes('$(SRC)') ? 'internal' : 'external';
+								if (_item.group)
+								{
+									const _group =
+										_item.group.map
+										(
+											(_file) =>
+											{
+												const { ext } = path.parse(_file);
 
-								return `$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ file }.${ CONFIG[this.env].o }`;
-							}
+												if (ext === '.c' || ext === '.cpp' || ext === '.s' || ext === '.asm')
+												{
+													const location = _file.includes('$(SRC)') ? 'internal' : 'external';
 
-							return file;
-						},
-					);
+													return `$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ _file }.${ CONFIG[this.env].o }`;
+												}
+
+												return _file;
+											},
+										);
+
+									return _group.join(' ');
+								}
+
+								const file = _item.file || _item;
+
+								const { ext } = path.parse(file);
+
+								if (ext === '.c' || ext === '.cpp' || ext === '.s' || ext === '.asm')
+								{
+									const location = file.includes('$(SRC)') ? 'internal' : 'external';
+
+									return `$(BUILD)/${ location }/${ CONFIG[this.env].o }/${ file }.${ CONFIG[this.env].o }`;
+								}
+
+								return file;
+							},
+						);
 
 				if (entry.type === 'static')
 				{
@@ -1250,6 +1295,28 @@ ${ (options?.variables?.[this.env] ? Object.keys(options.variables[this.env]).ma
 				{
 					statements.push(this.binary(entry));
 				}
+			}
+			else if (entry.group)
+			{
+				entry.group.forEach
+				(
+					(file) =>
+					{
+						const _entry =
+						{
+							file,
+							include_directories: entry.include_directories,
+							include_directories_override: entry.include_directories_override,
+							flags: entry.flags,
+							flags_override: entry.flags_override,
+							watch_files: entry.watch_files,
+							watch_files3: entry.watch_files3,
+							watch_directories: entry.watch_directories,
+						};
+
+						parseEntry(_entry, head_entry);
+					},
+				);
 			}
 			else
 			{
@@ -1397,7 +1464,7 @@ LIB_EXT=${ CONFIG[this.env].a }`;
 				// 	return LOG('\x1b[33m', evt);
 				// }
 
-				LOG('\x1b[34m', evt);
+				return LOG('\x1b[34m', evt);
 			},
 		);
 	}

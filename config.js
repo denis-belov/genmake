@@ -77,21 +77,21 @@ module.exports =
 		bin: 'wasm',
 
 		// wasi-sdk clang is set for wasm compilation, but regular clang can also be used with proper flags.
-		C_COMPILER: 'clang',
-		// C_COMPILER: '/home/denis/lib/wasi-sdk-14.0/bin/clang',
+		// C_COMPILER: 'clang',
+		C_COMPILER: '/home/denis/lib/wasi-sdk-14.0/bin/clang',
 
 		C_COMPILER_ARG: '--target=wasm32-unknown-wasi-unknown -ferror-limit=0 -fno-exceptions -mthread-model single --sysroot=/home/denis/lib/wasi-sdk-14.0/share/wasi-sysroot',
 		// C_COMPILER_ARG: '--target=wasm32-unknown-unknown-wasm32 -ferror-limit=0 -fno-exceptions -mthread-model single --sysroot=/home/denis/lib/wasi-sdk-14.0/share/wasi-sysroot',
 
-		CPP_COMPILER: 'clang++',
-		// CPP_COMPILER: '/home/denis/lib/wasi-sdk-14.0/bin/clang++',
+		// CPP_COMPILER: 'clang++',
+		CPP_COMPILER: '/home/denis/lib/wasi-sdk-14.0/bin/clang++',
 
 		// CPP_COMPILER_ARG: '--target=wasm32-unknown-wasi-unknown -I /usr/include/c++/10 -I /usr/include -I /usr/include/x86_64-linux-gnu -I /usr/include/x86_64-linux-gnu/c++/10',
 		CPP_COMPILER_ARG: '--target=wasm32-unknown-wasi-unknown -ferror-limit=0 -fno-exceptions -mthread-model single --sysroot=/home/denis/lib/wasi-sdk-14.0/share/wasi-sysroot',
 		// CPP_COMPILER_ARG: '--target=wasm32-unknown-unknown-wasm32 -ferror-limit=0 -fno-exceptions -mthread-model single -I /usr/include/c++/10 -I /usr/include -I /usr/include/x86_64-linux-gnu -I /usr/include/x86_64-linux-gnu/c++/10',
 
-		BUILDER: 'wasm-ld',
-		// BUILDER: '/home/denis/lib/wasi-sdk-14.0/bin/wasm-ld',
+		// BUILDER: 'wasm-ld',
+		BUILDER: '/home/denis/lib/wasi-sdk-14.0/bin/wasm-ld',
 		// BUILDER: 'clang++',
 
 		BUILDER_ARG: '-r -mwasm32 -error-limit=0 --export-all --no-entry --allow-undefined --no-check-features',
